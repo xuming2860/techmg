@@ -35,18 +35,32 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { login, getUserInfo } from '@/api/auth'
+import { login, getUserInfo, ssoLoginUrl, ssoLogin } from '@/api/auth'
 import { getUserMenuTree } from '@/api/system/menu'
 import { useUserStore } from '@/store/user'
 
 const router = useRouter()
 const userStore = useUserStore()
 const form = reactive({ authNo: '', password: '' })
+const isSsoMode = import.meta.env.VITE_SSO_ENABLED === 'true'
 
 async function handleLogin() {
+  if (isSsoMode) {
+    // SSO mode: redirect to SSO login
+    try {
+      const res = await ssoLoginUrl()
+      if (res.loginUrl) {
+        window.location.href = res.loginUrl
+        return
+      }
+    } catch (e) {
+      console.error('Failed to get SSO login URL:', e)
+    }
+  }
+
   if (!form.authNo || !form.password) {
     ElMessage.warning('请输入认证号和密码')
     return
@@ -68,6 +82,24 @@ async function handleLogin() {
     router.push('/')
   } catch {}
 }
+
+// SSO callback handler (called when returning with ?ticket=xxx)
+onMounted(async () => {
+  const urlParams = new URLSearchParams(window.location.search)
+  const ticket = urlParams.get('ticket')
+  if (ticket && isSsoMode) {
+    try {
+      const res = await ssoLogin(ticket)
+      userStore.setToken(res.token)
+      userStore.setUserInfo(res.userInfo)
+      await userStore.loadRoutes()
+      router.push('/')
+    } catch (e) {
+      ElMessage.error('SSO登录失败')
+      // fall back to password login page
+    }
+  }
+})
 </script>
 
 <style lang="scss" scoped>

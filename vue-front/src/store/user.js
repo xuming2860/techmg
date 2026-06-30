@@ -2,10 +2,20 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { router, componentMap, getLayout } from '@/router'
 import { getUserMenuTree } from '@/api/system/menu'
+import { encrypt, decrypt } from '@/utils/crypto'
+
+function loadUserInfoFromStorage() {
+  const cached = localStorage.getItem('userInfo')
+  if (cached) {
+    const info = decrypt(cached)
+    if (info) return info
+  }
+  return null
+}
 
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token') || '')
-  const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || 'null'))
+  const userInfo = ref(loadUserInfoFromStorage())
   const roles = ref([])
   const permissions = ref([])
   const menus = ref([])
@@ -20,7 +30,9 @@ export const useUserStore = defineStore('user', () => {
 
   function setUserInfo(info) {
     userInfo.value = info
-    localStorage.setItem('userInfo', JSON.stringify(info))
+    // AES encrypt before localStorage
+    localStorage.setItem('userInfo', encrypt(info))
+    roles.value = info.roles || []
   }
 
   function setMenus(val) {
@@ -67,6 +79,18 @@ export const useUserStore = defineStore('user', () => {
     })
   }
 
+  /** Load userInfo from localStorage (called on app init) */
+  function loadUserInfo() {
+    const cached = localStorage.getItem('userInfo')
+    if (cached) {
+      const info = decrypt(cached)
+      if (info) {
+        userInfo.value = info
+        roles.value = info.roles || []
+      }
+    }
+  }
+
   /** Call on page refresh to restore routes if already logged in */
   async function loadRoutes() {
     if (routesLoaded.value) return
@@ -106,6 +130,7 @@ export const useUserStore = defineStore('user', () => {
     setRoles,
     setPermissions,
     generateRoutes,
+    loadUserInfo,
     loadRoutes,
     logout
   }

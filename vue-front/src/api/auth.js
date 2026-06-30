@@ -11,3 +11,11 @@ export function logout() {
 export function getUserInfo() {
   return request({ url: '/api/auth/userinfo', method: 'get' })
 }
+
+export function ssoLoginUrl() {
+  return request.get('/api/auth/sso/login-url')
+}
+
+export function ssoLogin(ticket) {
+  return request.post('/api/auth/sso/login', { ticket })
+}
