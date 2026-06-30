@@ -14,6 +14,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Value;
 
 @Slf4j
 @Aspect
@@ -22,6 +23,9 @@ public class ApiAccessLogAspect {
 
     private final Gson gson = new Gson();
     private final ApplicationEventPublisher eventPublisher;
+
+    @Value("${api.access-log.max-length:4000}")
+    private int maxLogLength;
 
     public ApiAccessLogAspect(ApplicationEventPublisher eventPublisher) {
         this.eventPublisher = eventPublisher;
@@ -32,9 +36,12 @@ public class ApiAccessLogAspect {
         ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
         HttpServletRequest request = attributes != null ? attributes.getRequest() : null;
 
-        String url = request != null ? request.getRequestURI() : "";
         String method = request != null ? request.getMethod() : "";
         String ip = request != null ? request.getRemoteAddr() : "";
+        String userAgent = request != null ? request.getHeader("User-Agent") : "";
+        String referer = request != null ? request.getHeader("Referer") : "";
+        if (userAgent == null) userAgent = "";
+        if (referer == null) referer = "";
 
         MethodSignature signature = (MethodSignature) point.getSignature();
         String className = signature.getDeclaringType().getSimpleName();
@@ -48,15 +55,13 @@ public class ApiAccessLogAspect {
             operator = authentication.getName();
         }
 
-        // capture request params (truncated to 2000 chars)
+        // capture request params (truncated to maxLogLength)
         String requestParam = "";
         Object[] args = point.getArgs();
         if (args != null && args.length > 0) {
             try {
                 requestParam = gson.toJson(args);
-                if (requestParam.length() > 2000) {
-                    requestParam = requestParam.substring(0, 2000);
-                }
+                requestParam = truncate(requestParam, maxLogLength);
             } catch (Exception ignored) {
                 requestParam = "[serialization error]";
             }
@@ -68,12 +73,14 @@ public class ApiAccessLogAspect {
             long cost = System.currentTimeMillis() - start;
 
             String responseResult = result != null ? gson.toJson(result) : "null";
-            if (responseResult.length() > 2000) {
-                responseResult = responseResult.substring(0, 2000);
-            }
+            responseResult = truncate(responseResult, maxLogLength);
+            int resultJsonLen = responseResult.length();
 
-            log.info("[API] {} {} | {}.{} | IP:{} | cost:{}ms | result:{}",
-                    method, url, className, methodName, ip, cost, responseResult);
+            log.info("[API] {} {} | IP:{} | UA:{} | Referer:{} | Operator:{} | Cost:{}ms\n" +
+                     "     Request: {}\n" +
+                     "     Response(code=200, size={}B): {}",
+                    method, getFullUrl(request), ip, userAgent, referer, operator, cost,
+                    requestParam, resultJsonLen, responseResult);
 
             // publish event for async DB logging
             publishEvent(className, methodName, operator, requestParam, responseResult, ip, cost, 1);
@@ -83,18 +90,45 @@ public class ApiAccessLogAspect {
             long cost = System.currentTimeMillis() - start;
 
             String responseResult = "error: " + e.getMessage();
-            if (responseResult.length() > 2000) {
-                responseResult = responseResult.substring(0, 2000);
+            responseResult = truncate(responseResult, maxLogLength);
+
+            // build stack trace summary (first 3 frames)
+            String stackSummary = "";
+            StackTraceElement[] stack = e.getStackTrace();
+            if (stack != null && stack.length > 0) {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < Math.min(3, stack.length); i++) {
+                    sb.append("     at ").append(stack[i].toString()).append("\n");
+                }
+                sb.append("     ...[stack truncated]");
+                stackSummary = sb.toString();
             }
 
-            log.error("[API] {} {} | {}.{} | IP:{} | cost:{}ms | error:{}",
-                    method, url, className, methodName, ip, cost, e.getMessage(), e);
+            log.error("[API] {} {} | IP:{} | UA:{} | Operator:{} | Cost:{}ms | ERROR: {}\n" +
+                      "     Request: {}\n" +
+                      "     Response(error): {}\n" +
+                      "{}",
+                    method, getFullUrl(request), ip, userAgent, operator, cost, e.getClass().getSimpleName(),
+                    requestParam, responseResult, stackSummary);
 
             // publish event for async DB logging (failure)
             publishEvent(className, methodName, operator, requestParam, responseResult, ip, cost, 0);
 
             throw e;
         }
+    }
+
+    private String getFullUrl(HttpServletRequest request) {
+        if (request == null) return "";
+        String uri = request.getRequestURI();
+        String query = request.getQueryString();
+        return query != null ? uri + "?" + query : uri;
+    }
+
+    private String truncate(String text, int maxLen) {
+        if (text == null) return "null";
+        if (text.length() <= maxLen) return text;
+        return text.substring(0, maxLen) + " ...[truncated, total: " + text.length() + " chars]";
     }
 
     private void publishEvent(String module, String operation, String operator,

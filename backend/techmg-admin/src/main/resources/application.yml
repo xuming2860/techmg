@@ -85,3 +85,8 @@ springdoc:
 jwt:
   secret: techmg-jwt-secret-key-2024-shanghai-icbc-research-base
   expiration: 86400000  # 24h
+
+# API Access Log
+api:
+  access-log:
+    max-length: 4000  # max chars for request/response body logging
