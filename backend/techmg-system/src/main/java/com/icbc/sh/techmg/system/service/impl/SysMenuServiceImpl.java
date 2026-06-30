@@ -11,6 +11,7 @@ import com.icbc.sh.techmg.system.mapper.SysRoleMapper;
 import com.icbc.sh.techmg.system.mapper.SysRoleMenuMapper;
 import com.icbc.sh.techmg.system.mapper.SysUserRoleMapper;
 import com.icbc.sh.techmg.system.service.SysMenuService;
+import com.icbc.sh.techmg.common.util.TreeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +34,8 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         }
         allMenus.sort(Comparator.comparing(SysMenu::getSort, Comparator.nullsLast(Comparator.naturalOrder())));
         setLayout(allMenus);
-        return buildTree(allMenus, 0L);
+        return TreeUtil.buildTree(allMenus, SysMenu::getId, SysMenu::getParentId,
+                SysMenu::setChildren, 0L);
     }
 
     @Override
@@ -114,7 +116,8 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         filtered.sort(Comparator.comparing(SysMenu::getSort, Comparator.nullsLast(Comparator.naturalOrder())));
         setLayout(filtered);
 
-        return buildTree(filtered, 0L);
+        return TreeUtil.buildTree(filtered, SysMenu::getId, SysMenu::getParentId,
+                SysMenu::setChildren, 0L);
     }
 
     /**
@@ -130,12 +133,5 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
                 menu.setLayout("side");
             }
         }
-    }
-
-    private List<SysMenu> buildTree(List<SysMenu> allMenus, Long parentId) {
-        return allMenus.stream()
-                .filter(m -> m.getParentId() != null && m.getParentId().equals(parentId))
-                .peek(m -> m.setChildren(buildTree(allMenus, m.getId())))
-                .collect(Collectors.toList());
     }
 }

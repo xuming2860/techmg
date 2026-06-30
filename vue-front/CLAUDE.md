@@ -1,66 +1,130 @@
-# Frontend 规约 — techmg v1.0
+# Frontend 规约 — techmg
 
 Vue 3.3.9 / Vite 5.0.4 / Element Plus 2.5.0 / Pinia 2.1.4 / Vue Router 4.2.5 / Axios 1.7.2
 
-## v1.0 功能页面
-
-| 页面 | 路径 | 状态 |
-|------|------|------|
-| 登录 | `/login` | ✅ 完整 (login API + JWT + 动态路由加载) |
-| 首页 Dashboard | `/dashboard` | ✅ (统计卡片 + 待办列表 + 图表占位) |
-| 用户管理 | `/system/user` | ✅ CRUD + 搜索 + 角色分配 + 部门选择 |
-| 角色管理 | `/system/role` | ✅ CRUD + 菜单树分配 |
-| 菜单管理 | `/system/menu` | ✅ 树形表格 + CRUD + 类型切换 |
-| 部门管理 | `/system/dept` | ✅ 树形表格 + CRUD |
-| 技术治理 | `/tech-governance` | 占位 |
-| 数据库治理 | `/db-governance` | 占位 |
-| 数据库巡检 | `/db-inspection` | 占位 |
-| 资产管理 (4页) | `/asset/*` | 占位 |
-| 生产管理 | `/production` | 占位 |
-
-## 五大模块 + 布局
+## 功能模块 + 页面清单
 
 ```
-首页 (上下布局, 无侧边栏)  — 宽屏, 适合报表和待办
-技术管理 (上左右)          — 技术治理/DB治理/DB巡检
-资产管理 (上左右)          — 应用/参数/代码/存储过程
-生产管理 (上左右)          — 占位
-设置 (上左右, 仅管理员)     — 用户/角色/菜单/部门 CRUD
+首页 (上下布局)
+  └── Dashboard                               ✅
+
+技术管理 (上左右布局)
+  ├── 技改任务管理
+  │   ├── 任务总览    /tech-reform/overview     占位
+  │   ├── 子任务管理   /tech-reform/subtask      占位
+  │   └── 技改任务统计  /tech-reform/stats        占位
+  ├── 数据库管理
+  │   ├── DBA人员管理          /db-manage/dba        占位
+  │   ├── 应用数据库管理        /db-manage/app-db     占位
+  │   ├── 巡检任务管理          /db-manage/inspection 占位
+  │   └── 慢SQL和长事务管理     /db-manage/slow-sql   占位
+  └── 技术栈管理
+      ├── 整体视图    /tech-stack/overview       占位
+      └── 问题明细    /tech-stack/issues         占位
+
+资产管理 (上左右布局)
+  ├── 应用资产健康度       /asset/health          占位
+  ├── 应用信息管理
+  │   ├── 重保应用信息管理     /asset/app-important   占位
+  │   └── 应用重要场景信息管理  /asset/app-scenario    占位
+  └── 基地研发范式管理      /asset/dev-paradigm     占位
+
+生产管理 (上左右布局)
+  └── 生产管理            /production            占位
+
+数智生态 (上左右布局)
+  ├── 一级领域             /digital-eco/level1      占位
+  ├── 二级领域             /digital-eco/level2      占位
+  ├── 详细设计审核          /digital-eco/design-review 占位
+  └── 代码评审任务          /digital-eco/code-review   占位
+
+设置 (上左右布局, 仅PLATFORM_ADMIN)
+  ├── 菜单管理            /system/menu           ✅
+  ├── 角色管理            /system/role           ✅
+  └── 用户管理            /system/user           ✅
+
+登录    /login                                   ✅
+404     /:pathMatch(.*)*                         ✅
+```
+
+## 目录结构
+
+```
+vue-front/src/
+├── api/                          # API 层 (28 具名导出)
+│   ├── auth.js
+│   └── system/{user,role,menu,dept}.js
+├── router/index.js               # 静态路由 + componentMap + beforeEach
+├── store/
+│   ├── user.js                   # token/userInfo/roles/permissions/menus + loadRoutes/generateRoutes
+│   └── app.js                    # sidebarCollapsed (预留)
+├── utils/request.js              # Axios: Bearer + R<T>解包 + Blob + 错误分类
+├── layout/
+│   ├── AppLayout.vue             # route.meta.layout → Default/TopOnly
+│   ├── DefaultLayout.vue         # TopBar + Sidebar + content
+│   ├── TopOnlyLayout.vue         # TopBar + content
+│   ├── TopBar.vue                # logo + 模块tabs + 头像下拉(退出)
+│   ├── Sidebar.vue               # 按模块动态子菜单
+│   └── MenuItem.vue              # 递归 el-sub-menu / el-menu-item
+├── views/
+│   ├── login/index.vue           # 登录页
+│   ├── dashboard/index.vue       # 首页
+│   ├── error/404.vue             # 404 页面
+│   ├── system/{user,role,menu,dept}/
+│   ├── tech-reform/{overview,subtask,stats}/
+│   ├── db-manage/{dba,app-db,inspection,slow-sql}/
+│   ├── tech-stack/{overview,issues}/
+│   ├── asset/{health,app-important,app-scenario,dev-paradigm}/
+│   ├── production/
+│   └── digital-eco/{level1,level2,design-review,code-review}/
+├── directives/permission.js      # v-permission
+└── styles/index.scss             # CSS reset + 主题变量 + 滚动条
 ```
 
 ## 核心设计
 
-### API 层 (`src/api/`)
-- 5 文件, 28 具名导出函数
-- 页面禁止直接 axios, 必须调用 api 层函数
+### 布局系统
+- 路由级布局: `route.meta.layout = 'top' | 'side'`
+- 首页 → `TopOnlyLayout` (宽屏无侧栏)
+- 其他 → `DefaultLayout` (顶栏+侧栏)
+- `AppLayout.vue` 读 `route.meta.layout` 动态渲染
 
-### 请求封装 (`utils/request.js`)
-- 请求拦截: Bearer token 注入
-- 响应拦截: R\<T\> 解包 (code=200→data), 错误分类 (401/403/500)
-- Blob: `responseType:'blob'` 不做解包
+### 动态路由流程
+```
+登录 → login() → setToken() → getUserInfo() + getUserMenuTree()
+→ setMenus() → generateRoutes() → addRoute 所有菜单
+→ addRoute 404 兜底 → routesLoaded=true → push('/')
 
-### 动态路由
-- 登录后调用 `getUserMenuTree()` → `generateRoutes()` → `router.addRoute()`
-- 页面刷新时 `beforeEach` 检测 `routesLoaded`, 未加载则先初始化路由
-- 布局由 `route.meta.layout` 决定: `'top'` (首页) / `'side'` (其他)
+刷新 → beforeEach: isLoggedIn & !routesLoaded
+→ loadRoutes() → API → setMenus() → routesLoaded=true
+→ next({...to, replace:true})
+```
 
-### 布局组件
-- `AppLayout.vue`: 读 `route.meta.layout` 动态选择布局
-- `TopBar.vue`: 白色顶栏, ICBC 蓝色 logo + 模块 tabs + 用户 + 退出
-- `Sidebar.vue`: 浅灰侧栏, 按活跃模块显示子菜单
-- `MenuItem.vue`: 递归菜单组件
+### TopBar
+- 左侧: ICBC logo 蓝标 + 平台名
+- 中间: 模块 tabs (从 `getUserMenuTree()` 加载)
+- 右侧: 圆形头像(用户名首字) + 下拉菜单(退出登录)
 
-### Pinia Store
-- `user.js`: token/userInfo/roles/permissions/menus + `loadRoutes()` + `generateRoutes()`
-- `app.js`: sidebarCollapsed (预留)
+### Sidebar
+- 按活跃模块显示子菜单 (从 `getUserMenuTree()` 过滤)
+- 浅灰主题, 蓝色激活态, 递归 MenuItem
+
+### 请求封装
+- 请求拦截: `Authorization: Bearer {token}`
+- 响应拦截: `R<T>` 解包 (code=200→data)
+- Blob: `responseType:'blob'` 直通
+- 错误: 401→跳登录, 403→无权限, 5xx→服务器错误
 
 ### 权限
-- `v-permission` 指令已注册
-- 菜单按角色过滤 (后端 `/api/system/menu/user-tree`)
+- 路由守卫: `beforeEach` 检查 token
+- 菜单过滤: 后端 `/api/system/menu/user-tree` 按角色返回
+- 按钮级: `v-permission` 指令
 
 ## 构建
 
 ```bash
-cd vue-front && npm install && npm run dev    # 开发 (5173→8080)
-npm run build:test && npm run build:prod       # 构建
+cd vue-front
+npm install && npm run dev           # 开发 localhost:5173 → proxy /api → 8080
+npm run build:test                   # 测试构建
+npm run build:prod                   # 生产构建
 ```

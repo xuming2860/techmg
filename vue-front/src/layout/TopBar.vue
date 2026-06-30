@@ -14,28 +14,44 @@
         >{{ mod.menuName }}</router-link>
         <router-link
           v-else-if="mod.children?.length"
-          :to="mod.children[0].path"
+          :to="getFirstPath(mod)"
           class="nav-item"
           :class="{ active: activeModule === mod.id }"
         >{{ mod.menuName }}</router-link>
       </template>
     </nav>
     <div class="topbar-right">
-      <span class="user-name">{{ userStore.userInfo?.realName || '未登录' }}</span>
-      <el-button text @click="handleLogout">退出</el-button>
+      <el-dropdown trigger="click" @command="handleCommand">
+        <span class="user-dropdown">
+          <span class="avatar">{{ avatarText }}</span>
+          <span class="user-name">{{ userStore.userInfo?.realName || '未登录' }}</span>
+          <el-icon class="arrow"><ArrowDown /></el-icon>
+        </span>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
     </div>
   </header>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { getUserMenuTree } from '@/api/system/menu'
+
+import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const userStore = useUserStore()
 const modules = ref([])
+
+const avatarText = computed(() => {
+  const name = userStore.userInfo?.realName || '?'
+  return name.charAt(0)
+})
 
 const activeModule = computed(() => {
   const path = route.path
@@ -62,9 +78,23 @@ onMounted(async () => {
   } catch { modules.value = [] }
 })
 
-function handleLogout() {
-  userStore.logout()
-  window.location.href = '/login'
+/** Find first leaf menu path recursively for directory nodes */
+function getFirstPath(mod) {
+  if (mod.path) return mod.path
+  if (mod.children?.length) {
+    for (const child of mod.children) {
+      const path = getFirstPath(child)
+      if (path) return path
+    }
+  }
+  return '/'
+}
+
+function handleCommand(cmd) {
+  if (cmd === 'logout') {
+    userStore.logout()
+    window.location.href = '/login'
+  }
 }
 </script>
 
@@ -120,9 +150,31 @@ function handleLogout() {
 .topbar-right {
   display: flex;
   align-items: center;
-  gap: 12px;
   margin-left: auto;
   flex-shrink: 0;
-  .user-name { font-size: 13px; color: #646a73; }
+}
+.user-dropdown {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background .15s;
+  &:hover { background: #f2f3f5; }
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: #3370ff;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .user-name { font-size: 13px; color: #1f2329; }
+  .arrow { font-size: 12px; color: #8f959e; margin-left: 2px; }
 }
 </style>

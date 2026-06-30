@@ -55,6 +55,12 @@ export const useUserStore = defineStore('user', () => {
         }
       }
     }
+    // Add catch-all 404 AFTER all dynamic routes
+    router.addRoute('main', {
+      path: '/:pathMatch(.*)*',
+      name: 'NotFound',
+      component: () => import('@/views/error/404.vue')
+    })
   }
 
   /** Call on page refresh to restore routes if already logged in */
