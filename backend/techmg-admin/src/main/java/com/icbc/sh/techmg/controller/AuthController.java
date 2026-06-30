@@ -19,7 +19,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -96,11 +95,10 @@ public class AuthController {
             extInfo.put("authNo", authNo);
         }
 
-        // Step 3: Sync to sys_user (upsert + update last_login_time)
-        SysUser sysUser = sysUserService.syncUserInfo(extInfo);
+        // Step 3: Sync to sys_user (upsert + update last_login_time), use return value directly
+        SysUser finalUser = sysUserService.syncUserInfo(extInfo);
 
         // Step 4: Load roles and generate JWT
-        SysUser finalUser = sysUserService.getByAuthNo(authNo);
         List<String> roles = loadRolesForUser(finalUser);
 
         String token = jwtTokenProvider.generateToken(authNo,
@@ -110,13 +108,13 @@ public class AuthController {
         // Step 5: Build response with extended user info
         Map<String, Object> userInfo = new LinkedHashMap<>();
         userInfo.put("authNo", authNo);
-        userInfo.put("realName", finalUser.getRealName());
+        userInfo.put("realName", finalUser != null ? finalUser.getRealName() : "");
         userInfo.put("tellername", extInfo.getOrDefault("tellername", ""));
         userInfo.put("ad", extInfo.getOrDefault("ad", ""));
         userInfo.put("branchId", extInfo.getOrDefault("branchId", ""));
         userInfo.put("branchName", extInfo.getOrDefault("branchName", ""));
         userInfo.put("notesId", extInfo.getOrDefault("notesId", ""));
-        userInfo.put("branchIdList", extInfo.getOrDefault("branchIdList", Collections.emptyList()));
+        userInfo.put("branchIdList", extInfo.getOrDefault("branchIdList", List.of()));
         userInfo.put("roles", roles);
 
         Map<String, Object> result = new HashMap<>();
@@ -125,6 +123,7 @@ public class AuthController {
         return R.ok(result);
     }
 
+    @ApiAccessLog
     @GetMapping("/sso/login-url")
     public R<Map<String, String>> ssoLoginUrl() {
         if (ssoAuthProvider == null || !ssoAuthProvider.enabled()) {

@@ -12,6 +12,7 @@ import com.icbc.sh.techmg.system.entity.SysUserRole;
 import com.icbc.sh.techmg.system.mapper.SysUserBranchMapper;
 import com.icbc.sh.techmg.system.mapper.SysUserMapper;
 import com.icbc.sh.techmg.system.mapper.SysUserRoleMapper;
+import com.icbc.sh.techmg.system.mapper.SysRoleMapper;
 import com.icbc.sh.techmg.system.model.dto.UserQueryDTO;
 import com.icbc.sh.techmg.system.service.SysUserService;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     private final SysUserRoleMapper sysUserRoleMapper;
     private final SysUserBranchMapper sysUserBranchMapper;
+    private final SysRoleMapper sysRoleMapper;
 
     @Override
     @DS("slave")
@@ -79,11 +81,15 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             user.setStatus(1); // enabled
             this.save(user);
 
-            // Assign default GUEST role (id=5)
-            SysUserRole ur = new SysUserRole();
-            ur.setUserId(user.getId());
-            ur.setRoleId(5L);
-            sysUserRoleMapper.insert(ur);
+            // Assign default GUEST role (query by code, not hardcoded id)
+            SysRole guestRole = sysRoleMapper.selectOne(
+                new LambdaQueryWrapper<SysRole>().eq(SysRole::getRoleCode, "GUEST"));
+            if (guestRole != null) {
+                SysUserRole ur = new SysUserRole();
+                ur.setUserId(user.getId());
+                ur.setRoleId(guestRole.getId());
+                sysUserRoleMapper.insert(ur);
+            }
         }
 
         // Update fields from API
