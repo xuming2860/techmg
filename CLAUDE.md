@@ -11,7 +11,10 @@ techmg/
 │   └── CLAUDE.md          # 后端规约
 ├── vue-front/             # Vue 3.3.9 + Vite 5.0.4
 │   └── CLAUDE.md          # 前端规约
-└── docs/superpowers/      # 设计文档 + 实施计划
+└── docs/
+    ├── requirements/       # 需求文档 (版本化)
+    │   └── v1.0.md         #   v1.0 需求文档
+    └── superpowers/        # 设计文档 + 实施计划
 ```
 
 ## 技术栈 (精确版本)
