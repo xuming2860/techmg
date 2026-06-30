@@ -81,10 +81,11 @@ public class TechReformTaskController {
     }
 
     /**
-     * 更新任务
+     * 更新任务 — 仅平台管理员
      */
     @ApiAccessLog
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('PLATFORM_ADMIN')")
     public R<TechReformTask> updateTask(@PathVariable Long id, @RequestBody TechReformTask task) {
         TechReformTask existing = techReformTaskService.getById(id);
         if (existing == null) {
@@ -96,10 +97,11 @@ public class TechReformTaskController {
     }
 
     /**
-     * 更新任务状态
+     * 更新任务状态 — 仅平台管理员
      */
     @ApiAccessLog
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasRole('PLATFORM_ADMIN')")
     public R<Void> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         TechReformTask existing = techReformTaskService.getById(id);
         if (existing == null) {
@@ -109,16 +111,16 @@ public class TechReformTaskController {
         if (status == null || status.isBlank()) {
             return R.fail(ResultCode.PARAM_ERROR, "状态值不能为空");
         }
-        existing.setStatus(status);
-        techReformTaskService.updateById(existing);
+        techReformTaskService.updateStatus(id, status);
         return R.ok();
     }
 
     /**
-     * 删除任务 — 逻辑删除
+     * 删除任务 — 仅平台管理员（逻辑删除）
      */
     @ApiAccessLog
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('PLATFORM_ADMIN')")
     public R<Void> deleteTask(@PathVariable Long id) {
         TechReformTask existing = techReformTaskService.getById(id);
         if (existing == null) {

@@ -63,10 +63,11 @@ public class TechReformSubtaskController {
     }
 
     /**
-     * 更新子任务
+     * 更新子任务 — 平台管理员或部门管理员
      */
     @ApiAccessLog
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('PLATFORM_ADMIN', 'DEPT_ADMIN')")
     public R<TechReformSubtask> updateSubtask(@PathVariable Long id, @RequestBody TechReformSubtask subtask) {
         TechReformSubtask existing = techReformSubtaskService.getById(id);
         if (existing == null) {
@@ -78,10 +79,11 @@ public class TechReformSubtaskController {
     }
 
     /**
-     * 更新子任务状态 — 使用 ReformStatus 枚举值
+     * 更新子任务状态 — 平台管理员或部门管理员
      */
     @ApiAccessLog
     @PutMapping("/{id}/status")
+    @PreAuthorize("hasAnyRole('PLATFORM_ADMIN', 'DEPT_ADMIN')")
     public R<Void> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
         TechReformSubtask existing = techReformSubtaskService.getById(id);
         if (existing == null) {

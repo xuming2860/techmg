@@ -73,20 +73,22 @@ public class TechReformItemController {
     }
 
     /**
-     * 创建治理项
+     * 创建治理项 — 平台管理员、部门管理员或部门DBA
      */
     @ApiAccessLog
     @PostMapping
+    @PreAuthorize("hasAnyRole('PLATFORM_ADMIN', 'DEPT_ADMIN', 'DEPT_DBA')")
     public R<TechReformItem> createItem(@RequestBody TechReformItem item) {
         techReformItemService.save(item);
         return R.ok(item);
     }
 
     /**
-     * 更新治理项
+     * 更新治理项 — 平台管理员、部门管理员或部门DBA
      */
     @ApiAccessLog
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('PLATFORM_ADMIN', 'DEPT_ADMIN', 'DEPT_DBA')")
     public R<TechReformItem> updateItem(@PathVariable Long id, @RequestBody TechReformItem item) {
         TechReformItem existing = techReformItemService.getById(id);
         if (existing == null) {
@@ -113,7 +115,7 @@ public class TechReformItemController {
     }
 
     /**
-     * 导入治理项 — 上传 Excel 文件
+     * 导入治理项 — 上传 Excel 文件（平台管理员或部门管理员）
      *
      * @param file      Excel 文件
      * @param mode      导入模式: overwrite(覆盖) / merge(合并)
@@ -121,6 +123,7 @@ public class TechReformItemController {
      */
     @ApiAccessLog
     @PostMapping("/upload")
+    @PreAuthorize("hasAnyRole('PLATFORM_ADMIN', 'DEPT_ADMIN')")
     public R<Integer> importItems(@RequestParam("file") MultipartFile file,
                                    @RequestParam("mode") String mode,
                                    @RequestParam("subtaskId") Long subtaskId) throws IOException {
@@ -200,11 +203,12 @@ public class TechReformItemController {
     }
 
     /**
-     * 批量更新治理项 — 上传 Excel 文件
+     * 批量更新治理项 — 上传 Excel 文件（平台管理员、部门管理员或部门DBA）
      * Excel 第一列为 ID（必填），其余列为待更新字段
      */
     @ApiAccessLog
     @PostMapping("/batch-update")
+    @PreAuthorize("hasAnyRole('PLATFORM_ADMIN', 'DEPT_ADMIN', 'DEPT_DBA')")
     public R<Integer> batchUpdateItems(@RequestParam("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
             return R.fail(ResultCode.PARAM_ERROR, "上传文件不能为空");

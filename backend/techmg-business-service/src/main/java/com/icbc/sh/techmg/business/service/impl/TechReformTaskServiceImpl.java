@@ -8,6 +8,7 @@ import com.icbc.sh.techmg.business.entity.TechReformTask;
 import com.icbc.sh.techmg.business.mapper.TechReformTaskMapper;
 import com.icbc.sh.techmg.business.service.TechReformTaskService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TechReformTaskServiceImpl extends ServiceImpl<TechReformTaskMapper, TechReformTask>
@@ -27,5 +28,15 @@ public class TechReformTaskServiceImpl extends ServiceImpl<TechReformTaskMapper,
         }
         wrapper.orderByDesc(TechReformTask::getCreateTime);
         return this.page(page, wrapper);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateStatus(Long id, String newStatus) {
+        TechReformTask task = this.getById(id);
+        if (task != null) {
+            task.setStatus(newStatus);
+            this.updateById(task);
+        }
     }
 }
