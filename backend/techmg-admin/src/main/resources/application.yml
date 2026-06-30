@@ -90,3 +90,9 @@ jwt:
 api:
   access-log:
     max-length: 4000  # max chars for request/response body logging
+
+# SSO (set enabled: true to activate; false keeps password login)
+sso:
+  enabled: false
+  login-url: ""
+  logout-url: ""

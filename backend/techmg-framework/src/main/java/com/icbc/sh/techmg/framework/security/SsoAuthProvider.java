@@ -1,5 +1,7 @@
 package com.icbc.sh.techmg.framework.security;
 
+import java.util.Map;
+
 /**
  * SSO 单点登录扩展接口。
  * 后期对接行内统一认证平台（如 OAuth2 / LDAP / SAML）时实现此接口。
@@ -17,4 +19,11 @@ public interface SsoAuthProvider {
 
     /** 获取 SSO 登出 URL */
     default String getLogoutUrl() { return null; }
+
+    /**
+     * 查询用户扩展信息（SSO 认证后从外部系统获取）。
+     * @param userId the authNo from SSO
+     * @return user info map with keys: authNo, tellername, ad, branchId, branchName, notesId, branchIdList
+     */
+    default Map<String, Object> getUserInfo(String userId) { return null; }
 }
