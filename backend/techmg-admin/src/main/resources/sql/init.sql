@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS `sys_dept` (
 CREATE TABLE IF NOT EXISTS `sys_user` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,
     `auth_no` VARCHAR(50) NOT NULL COMMENT '统一认证号',
+    `password` VARCHAR(255) DEFAULT '' COMMENT '密码',
     `username` VARCHAR(64) NOT NULL COMMENT '用户名',
     `real_name` VARCHAR(64) DEFAULT '' COMMENT '真实姓名',
     `email` VARCHAR(128) DEFAULT '' COMMENT '邮箱',
