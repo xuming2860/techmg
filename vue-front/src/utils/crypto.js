@@ -1,8 +1,5 @@
 import CryptoJS from 'crypto-js'
 
-// Note: requires "crypto-js" package — add via npm if not already present
-// npm install crypto-js
-
 const SECRET_KEY = import.meta.env.VITE_USERINFO_ENCRYPT_KEY || 'techmg-default-key'
 
 export function encrypt(data) {

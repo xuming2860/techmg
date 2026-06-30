@@ -59,6 +59,8 @@ async function handleLogin() {
     } catch (e) {
       console.error('Failed to get SSO login URL:', e)
     }
+    ElMessage.error('SSO登录服务暂不可用，请稍后再试')
+    return
   }
 
   if (!form.authNo || !form.password) {
@@ -93,10 +95,11 @@ onMounted(async () => {
       userStore.setToken(res.token)
       userStore.setUserInfo(res.userInfo)
       await userStore.loadRoutes()
-      router.push('/')
+      router.replace('/')
     } catch (e) {
+      console.error('SSO login failed:', e)
       ElMessage.error('SSO登录失败')
-      // fall back to password login page
+      window.history.replaceState(null, '', window.location.pathname)
     }
   }
 })
