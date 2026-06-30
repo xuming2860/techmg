@@ -6,11 +6,11 @@ spring:
     dynamic:
       datasource:
         master:
-          url: jdbc:mysql://localhost:3306/tmvp?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+          url: jdbc:mysql://47.99.179.180:33066/tmvp?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
           username: techmg
           password: Tech@123++**
         slave:
-          url: jdbc:mysql://localhost:3306/tmvp?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+          url: jdbc:mysql://47.99.179.180:33066/tmvp?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
           username: techmg
           password: Tech@123++**
 
