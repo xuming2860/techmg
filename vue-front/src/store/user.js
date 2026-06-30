@@ -29,8 +29,12 @@ export const useUserStore = defineStore('user', () => {
     routesLoaded.value = true
   }
 
-  function setRoles(val) { roles.value = val }
-  function setPermissions(val) { permissions.value = val }
+  function setRoles(val) {
+    roles.value = val
+  }
+  function setPermissions(val) {
+    permissions.value = val
+  }
 
   function generateRoutes(menuList) {
     if (!menuList || !Array.isArray(menuList)) return
@@ -89,8 +93,20 @@ export const useUserStore = defineStore('user', () => {
   }
 
   return {
-    token, userInfo, roles, permissions, menus, routesLoaded, isLoggedIn,
-    setToken, setUserInfo, setMenus, setRoles, setPermissions,
-    generateRoutes, loadRoutes, logout
+    token,
+    userInfo,
+    roles,
+    permissions,
+    menus,
+    routesLoaded,
+    isLoggedIn,
+    setToken,
+    setUserInfo,
+    setMenus,
+    setRoles,
+    setPermissions,
+    generateRoutes,
+    loadRoutes,
+    logout
   }
 })

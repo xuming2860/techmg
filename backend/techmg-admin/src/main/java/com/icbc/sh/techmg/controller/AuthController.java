@@ -1,5 +1,6 @@
 package com.icbc.sh.techmg.controller;
 
+import com.icbc.sh.techmg.common.annotation.Idempotent;
 import com.icbc.sh.techmg.common.model.R;
 import com.icbc.sh.techmg.framework.log.ApiAccessLog;
 import com.icbc.sh.techmg.framework.security.JwtTokenProvider;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -31,6 +33,7 @@ public class AuthController {
     private final SysUserService sysUserService;
 
     @ApiAccessLog
+    @Idempotent(value = "login", expire = 1, timeUnit = TimeUnit.MINUTES)
     @PostMapping("/login")
     public R<Map<String, Object>> login(@RequestBody Map<String, String> loginRequest) {
         String authNo = loginRequest.get("authNo");

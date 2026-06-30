@@ -12,7 +12,7 @@
         <menu-item :menu="menu" />
       </template>
       <el-menu-item v-if="sidebarMenus.length === 0" disabled>
-        <span style="color:#bbbfc4">暂无子菜单</span>
+        <span style="color: #bbbfc4">暂无子菜单</span>
       </el-menu-item>
     </el-menu>
   </aside>
@@ -60,7 +60,9 @@ onMounted(async () => {
   try {
     const tree = await getUserMenuTree()
     modules.value = tree || []
-  } catch { modules.value = [] }
+  } catch {
+    modules.value = []
+  }
 })
 </script>
 
@@ -80,15 +82,33 @@ onMounted(async () => {
     letter-spacing: 1px;
     text-transform: uppercase;
   }
-  :deep(.el-menu) { border-right: none; background: transparent; }
+  :deep(.el-menu) {
+    border-right: none;
+    background: transparent;
+  }
   :deep(.el-menu-item) {
-    font-size: 14px; height: 40px; line-height: 40px; margin: 2px 8px; border-radius: 6px;
-    &:hover { background: #eef0f4; }
-    &.is-active { background: #e1e9ff; color: #3370ff; }
+    font-size: 14px;
+    height: 40px;
+    line-height: 40px;
+    margin: 2px 8px;
+    border-radius: 6px;
+    &:hover {
+      background: #eef0f4;
+    }
+    &.is-active {
+      background: #e1e9ff;
+      color: #3370ff;
+    }
   }
   :deep(.el-sub-menu__title) {
-    font-size: 14px; height: 40px; line-height: 40px; margin: 2px 8px; border-radius: 6px;
-    &:hover { background: #eef0f4; }
+    font-size: 14px;
+    height: 40px;
+    line-height: 40px;
+    margin: 2px 8px;
+    border-radius: 6px;
+    &:hover {
+      background: #eef0f4;
+    }
   }
 }
 </style>

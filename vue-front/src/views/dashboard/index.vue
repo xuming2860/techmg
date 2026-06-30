@@ -10,7 +10,7 @@
       <el-col :span="6">
         <el-card class="stat-card" shadow="hover">
           <div class="stat-body">
-            <div class="stat-icon" style="background:#e6f4ff">
+            <div class="stat-icon" style="background: #e6f4ff">
               <el-icon :size="32" color="#1677ff"><Setting /></el-icon>
             </div>
             <div class="stat-info">
@@ -23,7 +23,7 @@
       <el-col :span="6">
         <el-card class="stat-card" shadow="hover">
           <div class="stat-body">
-            <div class="stat-icon" style="background:#f6ffed">
+            <div class="stat-icon" style="background: #f6ffed">
               <el-icon :size="32" color="#52c41a"><Coin /></el-icon>
             </div>
             <div class="stat-info">
@@ -36,7 +36,7 @@
       <el-col :span="6">
         <el-card class="stat-card" shadow="hover">
           <div class="stat-body">
-            <div class="stat-icon" style="background:#fff7e6">
+            <div class="stat-icon" style="background: #fff7e6">
               <el-icon :size="32" color="#fa8c16"><Aim /></el-icon>
             </div>
             <div class="stat-info">
@@ -49,7 +49,7 @@
       <el-col :span="6">
         <el-card class="stat-card" shadow="hover">
           <div class="stat-body">
-            <div class="stat-icon" style="background:#f9f0ff">
+            <div class="stat-icon" style="background: #f9f0ff">
               <el-icon :size="32" color="#722ed1"><FolderOpened /></el-icon>
             </div>
             <div class="stat-info">
@@ -72,13 +72,13 @@
             <el-table-column prop="taskName" label="任务名称" min-width="180" />
             <el-table-column prop="module" label="所属模块" width="120" />
             <el-table-column label="状态" width="100">
-              <template #default="{row}">
+              <template #default="{ row }">
                 <el-tag :type="statusType(row.status)" size="small">{{ row.status }}</el-tag>
               </template>
             </el-table-column>
             <el-table-column prop="deadline" label="截止日期" width="120" />
           </el-table>
-          <div v-if="pendingTasks.length===0" class="empty-state">暂无待完成任务 🎉</div>
+          <div v-if="pendingTasks.length === 0" class="empty-state">暂无待完成任务 🎉</div>
         </el-card>
       </el-col>
       <el-col :span="10">
@@ -103,7 +103,10 @@ import { useUserStore } from '@/store/user'
 const userStore = useUserStore()
 
 const today = new Date().toLocaleDateString('zh-CN', {
-  year:'numeric', month:'long', day:'numeric', weekday:'long'
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long'
 })
 
 // 统计数据（后续对接后端API）
@@ -120,7 +123,9 @@ const pendingTasks = ref([])
 // { taskName:'MySQL慢查询治理', module:'数据库治理', status:'进行中', deadline:'2026-07-15' }
 
 function statusType(status) {
-  return { '待开始':'info', '进行中':'warning', '已完成':'success', '已逾期':'danger' }[status] || 'info'
+  return (
+    { 待开始: 'info', 进行中: 'warning', 已完成: 'success', 已逾期: 'danger' }[status] || 'info'
+  )
 }
 </script>
 
@@ -130,22 +135,67 @@ function statusType(status) {
 }
 .welcome {
   margin-bottom: 24px;
-  h2 { margin:0 0 4px; font-size:22px; }
-  p { margin:0; color:#909399; font-size:14px; }
+  h2 {
+    margin: 0 0 4px;
+    font-size: 22px;
+  }
+  p {
+    margin: 0;
+    color: #909399;
+    font-size: 14px;
+  }
 }
-.stat-row { margin-bottom: 20px; }
+.stat-row {
+  margin-bottom: 20px;
+}
 .stat-card {
-  .stat-body { display:flex; align-items:center; gap:16px; }
-  .stat-icon { width:56px; height:56px; border-radius:12px; display:flex; align-items:center; justify-content:center; }
-  .stat-num { font-size:28px; font-weight:700; color:#303133; line-height:1.2; }
-  .stat-label { font-size:13px; color:#909399; margin-top:2px; }
+  .stat-body {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .stat-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .stat-num {
+    font-size: 28px;
+    font-weight: 700;
+    color: #303133;
+    line-height: 1.2;
+  }
+  .stat-label {
+    font-size: 13px;
+    color: #909399;
+    margin-top: 2px;
+  }
 }
-.content-row { margin-bottom: 20px; }
-.card-title { font-weight:600; }
+.content-row {
+  margin-bottom: 20px;
+}
+.card-title {
+  font-weight: 600;
+}
 .chart-placeholder {
-  display:flex; flex-direction:column; align-items:center; justify-content:center;
-  height:200px; color:#c0c4cc;
-  p { margin-top:12px; font-size:14px; }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #c0c4cc;
+  p {
+    margin-top: 12px;
+    font-size: 14px;
+  }
 }
-.empty-state { text-align:center; padding:32px; color:#c0c4cc; font-size:14px; }
+.empty-state {
+  text-align: center;
+  padding: 32px;
+  color: #c0c4cc;
+  font-size: 14px;
+}
 </style>

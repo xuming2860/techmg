@@ -45,7 +45,8 @@ const componentMap = {
   'views/production/index': () => import('@/views/production/index.vue'),
   'views/digital-eco/level1/index': () => import('@/views/digital-eco/level1/index.vue'),
   'views/digital-eco/level2/index': () => import('@/views/digital-eco/level2/index.vue'),
-  'views/digital-eco/design-review/index': () => import('@/views/digital-eco/design-review/index.vue'),
+  'views/digital-eco/design-review/index': () =>
+    import('@/views/digital-eco/design-review/index.vue'),
   'views/digital-eco/code-review/index': () => import('@/views/digital-eco/code-review/index.vue')
 }
 

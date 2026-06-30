@@ -1,18 +1,26 @@
 package com.icbc.sh.techmg.framework.web;
 
 import com.icbc.sh.techmg.common.model.R;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.MethodParameter;
+import org.springframework.core.Ordered;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer, ResponseBodyAdvice<Object> {
+
+    @Autowired
+    private IdempotentInterceptor idempotentInterceptor;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -43,5 +51,19 @@ public class WebConfig implements WebMvcConfigurer, ResponseBodyAdvice<Object> {
             return body; // String 特殊处理，由 Gson 序列化时不再二次包装
         }
         return R.ok(body);
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(idempotentInterceptor).addPathPatterns("/api/**");
+    }
+
+    @Bean
+    public FilterRegistrationBean<TraceIdFilter> traceIdFilter() {
+        FilterRegistrationBean<TraceIdFilter> registration = new FilterRegistrationBean<>();
+        registration.setFilter(new TraceIdFilter());
+        registration.addUrlPatterns("/api/*");
+        registration.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return registration;
     }
 }

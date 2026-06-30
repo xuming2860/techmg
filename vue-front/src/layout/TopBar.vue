@@ -11,13 +11,15 @@
           :to="mod.path"
           class="nav-item"
           :class="{ active: activeModule === mod.id }"
-        >{{ mod.menuName }}</router-link>
+          >{{ mod.menuName }}</router-link
+        >
         <router-link
           v-else-if="mod.children?.length"
           :to="getFirstPath(mod)"
           class="nav-item"
           :class="{ active: activeModule === mod.id }"
-        >{{ mod.menuName }}</router-link>
+          >{{ mod.menuName }}</router-link
+        >
       </template>
     </nav>
     <div class="topbar-right">
@@ -75,7 +77,9 @@ onMounted(async () => {
   try {
     const tree = await getUserMenuTree()
     modules.value = tree || []
-  } catch { modules.value = [] }
+  } catch {
+    modules.value = []
+  }
 })
 
 /** Find first leaf menu path recursively for directory nodes */
@@ -118,7 +122,7 @@ function handleCommand(cmd) {
   .logo {
     font-size: 13px;
     font-weight: 700;
-    letter-spacing: .5px;
+    letter-spacing: 0.5px;
     color: #fff;
     background: #3370ff;
     padding: 3px 10px;
@@ -141,10 +145,16 @@ function handleCommand(cmd) {
     color: #646a73;
     text-decoration: none;
     border-bottom: 2px solid transparent;
-    transition: all .15s;
+    transition: all 0.15s;
     white-space: nowrap;
-    &:hover { color: #3370ff; }
-    &.active { color: #3370ff; border-bottom-color: #3370ff; font-weight: 500; }
+    &:hover {
+      color: #3370ff;
+    }
+    &.active {
+      color: #3370ff;
+      border-bottom-color: #3370ff;
+      font-weight: 500;
+    }
   }
 }
 .topbar-right {
@@ -160,10 +170,13 @@ function handleCommand(cmd) {
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 6px;
-  transition: background .15s;
-  &:hover { background: #f2f3f5; }
+  transition: background 0.15s;
+  &:hover {
+    background: #f2f3f5;
+  }
   .avatar {
-    width: 30px; height: 30px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     background: #3370ff;
     color: #fff;
@@ -174,7 +187,14 @@ function handleCommand(cmd) {
     font-weight: 600;
     flex-shrink: 0;
   }
-  .user-name { font-size: 13px; color: #1f2329; }
-  .arrow { font-size: 12px; color: #8f959e; margin-left: 2px; }
+  .user-name {
+    font-size: 13px;
+    color: #1f2329;
+  }
+  .arrow {
+    font-size: 12px;
+    color: #8f959e;
+    margin-left: 2px;
+  }
 }
 </style>

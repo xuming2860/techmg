@@ -11,11 +11,21 @@
           <el-input v-model="form.authNo" placeholder="统一认证号" prefix-icon="User" />
         </el-form-item>
         <el-form-item>
-          <el-input v-model="form.password" type="password" placeholder="密码" prefix-icon="Lock" show-password
-            @keyup.enter="handleLogin" />
+          <el-input
+            v-model="form.password"
+            type="password"
+            placeholder="密码"
+            prefix-icon="Lock"
+            show-password
+            @keyup.enter="handleLogin"
+          />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" style="width:100%;height:44px;font-size:15px" @click="handleLogin">
+          <el-button
+            type="primary"
+            style="width: 100%; height: 44px; font-size: 15px"
+            @click="handleLogin"
+          >
             登 录
           </el-button>
         </el-form-item>
@@ -44,8 +54,16 @@ async function handleLogin() {
   try {
     const data = await login(form)
     userStore.setToken(data.token)
-    try { const info = await getUserInfo(); userStore.setUserInfo(info.userInfo||info); userStore.setRoles(info.roles||[]); userStore.setPermissions(info.permissions||[]) } catch {}
-    try { const tree = await getUserMenuTree(); userStore.setMenus(tree||[]) } catch {}
+    try {
+      const info = await getUserInfo()
+      userStore.setUserInfo(info.userInfo || info)
+      userStore.setRoles(info.roles || [])
+      userStore.setPermissions(info.permissions || [])
+    } catch {}
+    try {
+      const tree = await getUserMenuTree()
+      userStore.setMenus(tree || [])
+    } catch {}
     ElMessage.success('登录成功')
     router.push('/')
   } catch {}
@@ -65,7 +83,7 @@ async function handleLogin() {
   padding: 40px 36px 32px;
   background: #fff;
   border-radius: 12px;
-  box-shadow: 0 2px 16px rgba(0,0,0,.06);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
 }
 .login-header {
   text-align: center;
@@ -80,7 +98,16 @@ async function handleLogin() {
     border-radius: 4px;
     margin-bottom: 16px;
   }
-  h2 { font-size: 20px; font-weight: 600; color: #1f2329; margin: 0 0 6px; }
-  p { font-size: 13px; color: #8f959e; margin: 0; }
+  h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1f2329;
+    margin: 0 0 6px;
+  }
+  p {
+    font-size: 13px;
+    color: #8f959e;
+    margin: 0;
+  }
 }
 </style>
