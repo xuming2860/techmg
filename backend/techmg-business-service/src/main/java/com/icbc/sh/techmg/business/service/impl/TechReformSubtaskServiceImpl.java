@@ -8,6 +8,7 @@ import com.icbc.sh.techmg.business.entity.TechReformSubtask;
 import com.icbc.sh.techmg.business.mapper.TechReformSubtaskMapper;
 import com.icbc.sh.techmg.business.service.TechReformSubtaskService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TechReformSubtaskServiceImpl extends ServiceImpl<TechReformSubtaskMapper, TechReformSubtask>
@@ -27,6 +28,7 @@ public class TechReformSubtaskServiceImpl extends ServiceImpl<TechReformSubtaskM
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void updateStatus(Long id, String newStatus) {
         TechReformSubtask subtask = this.getById(id);
         if (subtask != null) {
