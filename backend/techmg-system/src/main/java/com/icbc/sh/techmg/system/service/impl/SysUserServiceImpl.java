@@ -5,8 +5,11 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.icbc.sh.techmg.system.entity.SysRole;
 import com.icbc.sh.techmg.system.entity.SysUser;
+import com.icbc.sh.techmg.system.entity.SysUserBranch;
 import com.icbc.sh.techmg.system.entity.SysUserRole;
+import com.icbc.sh.techmg.system.mapper.SysUserBranchMapper;
 import com.icbc.sh.techmg.system.mapper.SysUserMapper;
 import com.icbc.sh.techmg.system.mapper.SysUserRoleMapper;
 import com.icbc.sh.techmg.system.model.dto.UserQueryDTO;
@@ -16,12 +19,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
 public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements SysUserService {
 
     private final SysUserRoleMapper sysUserRoleMapper;
+    private final SysUserBranchMapper sysUserBranchMapper;
 
     @Override
     @DS("slave")
@@ -58,5 +63,61 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
                 sysUserRoleMapper.insert(ur);
             }
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public SysUser syncUserInfo(Map<String, Object> info) {
+        String authNo = (String) info.get("authNo");
+        SysUser user = getByAuthNo(authNo);
+
+        if (user == null) {
+            // First login — create user, save first to get id, then assign default role
+            user = new SysUser();
+            user.setAuthNo(authNo);
+            user.setUsername(authNo);
+            user.setStatus(1); // enabled
+            this.save(user);
+
+            // Assign default GUEST role (id=5)
+            SysUserRole ur = new SysUserRole();
+            ur.setUserId(user.getId());
+            ur.setRoleId(5L);
+            sysUserRoleMapper.insert(ur);
+        }
+
+        // Update fields from API
+        user.setRealName((String) info.getOrDefault("tellername", ""));
+        user.setAdAccount((String) info.getOrDefault("ad", ""));
+        user.setBranchId((String) info.getOrDefault("branchId", ""));
+        user.setBranchName((String) info.getOrDefault("branchName", ""));
+        user.setNotesId((String) info.getOrDefault("notesId", ""));
+        user.setLastLoginTime(java.time.LocalDateTime.now());
+
+        this.saveOrUpdate(user);
+
+        // Sync branch list
+        @SuppressWarnings("unchecked")
+        List<Map<String, String>> branchList = (List<Map<String, String>>) info.get("branchIdList");
+        if (branchList != null) {
+            LambdaQueryWrapper<SysUserBranch> wrapper = new LambdaQueryWrapper<>();
+            wrapper.eq(SysUserBranch::getUserId, user.getId());
+            sysUserBranchMapper.delete(wrapper);
+
+            for (Map<String, String> branch : branchList) {
+                SysUserBranch ub = new SysUserBranch();
+                ub.setUserId(user.getId());
+                ub.setBranchId(branch.get("branchId"));
+                ub.setBranchName(branch.get("branchName"));
+                sysUserBranchMapper.insert(ub);
+            }
+        }
+
+        return user;
+    }
+
+    @Override
+    public List<SysRole> getRoles(Long userId) {
+        return sysUserRoleMapper.selectRolesByUserId(userId);
     }
 }
