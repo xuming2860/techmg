@@ -16,5 +16,10 @@ public class SysUser extends BaseEntity {
     private String email;
     private String phone;
     private Long deptId;
+    private String adAccount;
+    private String branchId;
+    private String branchName;
+    private String notesId;
+    private java.time.LocalDateTime lastLoginTime;
     private Integer status;  // 0-禁用, 1-启用
 }
