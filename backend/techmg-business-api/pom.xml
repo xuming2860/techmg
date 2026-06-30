@@ -9,6 +9,14 @@
         <version>1.0.0-SNAPSHOT</version>
     </parent>
     <artifactId>techmg-business-api</artifactId>
-    <packaging>jar</packaging>
     <name>techmg-business-api</name>
+    <description>业务接口定义 - DTO、Service接口、Feign接口</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.icbc.sh</groupId>
+            <artifactId>techmg-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
 </project>

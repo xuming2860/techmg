@@ -14,7 +14,7 @@ import java.util.List;
 public class GsonConfig implements WebMvcConfigurer {
 
     @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
+    public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
         Gson gson = new GsonBuilder()
                 .setDateFormat("yyyy-MM-dd HH:mm:ss")
                 .registerTypeAdapter(LocalDateTime.class, (JsonSerializer<LocalDateTime>)

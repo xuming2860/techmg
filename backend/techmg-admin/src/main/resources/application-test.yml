@@ -1,0 +1,19 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    dynamic:
+      datasource:
+        master:
+          url: jdbc:mysql://test-db:3306/tmvp?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+          username: techmg
+          password: ${DB_PASSWORD}
+        slave:
+          url: jdbc:mysql://test-db:3306/tmvp?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+          username: techmg
+          password: ${DB_PASSWORD}
+
+logging:
+  level:
+    com.icbc.sh.techmg: INFO

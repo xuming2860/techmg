@@ -2,13 +2,12 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useAppStore = defineStore('app', () => {
-  // 'side' = 上左右布局, 'top' = 上下布局
-  const layout = ref(localStorage.getItem('layout') || 'side')
+  // Layout is now route-level (route.meta.layout). This store is reserved for future app-level state.
+  const sidebarCollapsed = ref(false)
 
-  function setLayout(mode) {
-    layout.value = mode
-    localStorage.setItem('layout', mode)
+  function toggleSidebar() {
+    sidebarCollapsed.value = !sidebarCollapsed.value
   }
 
-  return { layout, setLayout }
+  return { sidebarCollapsed, toggleSidebar }
 })
