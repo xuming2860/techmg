@@ -31,7 +31,6 @@ const componentMap = {
   'views/system/dept/index': () => import('@/views/system/dept/index.vue'),
   'views/tech-reform/overview/index': () => import('@/views/tech-reform/overview/index.vue'),
   'views/tech-reform/subtask/index': () => import('@/views/tech-reform/subtask/index.vue'),
-  'views/tech-reform/stats/index': () => import('@/views/tech-reform/stats/index.vue'),
   'views/db-manage/dba/index': () => import('@/views/db-manage/dba/index.vue'),
   'views/db-manage/app-db/index': () => import('@/views/db-manage/app-db/index.vue'),
   'views/db-manage/inspection/index': () => import('@/views/db-manage/inspection/index.vue'),
