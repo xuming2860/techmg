@@ -91,8 +91,20 @@ api:
   access-log:
     max-length: 4000  # max chars for request/response body logging
 
-# SSO (set enabled: true to activate; false keeps password login)
+# SSO (set enabled: true to activate; false keeps mock login)
 sso:
   enabled: false
   login-url: ""
   logout-url: ""
+
+# Mock 登录配置（sso.enabled=false 时生效）
+login:
+  mock:
+    auth-no: "admin"
+    real-name: "平台管理员"
+    branch-id: "12092342"
+    branch-name: "上海技术部"
+    notes-id: "admin@sdc.com"
+    ad-account: ""
+    roles:
+      - "ROLE_PLATFORM_ADMIN"

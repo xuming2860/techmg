@@ -2,6 +2,7 @@ package com.icbc.sh.techmg.controller;
 
 import com.icbc.sh.techmg.common.annotation.Idempotent;
 import com.icbc.sh.techmg.common.model.R;
+import com.icbc.sh.techmg.config.LoginMockProperties;
 import com.icbc.sh.techmg.framework.log.ApiAccessLog;
 import com.icbc.sh.techmg.framework.security.JwtTokenProvider;
 import com.icbc.sh.techmg.framework.security.SsoAuthProvider;
@@ -11,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,10 +19,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -35,38 +32,77 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final SysUserService sysUserService;
+    private final LoginMockProperties loginMockProperties;
 
     @Autowired(required = false)
     private SsoAuthProvider ssoAuthProvider;
 
+    /**
+     * 登录 — 支持 SSO 模式和 Mock 模式。
+     *
+     * Mock 模式（sso.enabled=false）：跳过密码验证，返回配置文件中 login.mock 的用户信息。
+     * SSO  模式（sso.enabled=true） ：通过统一认证 ticket 登录。
+     */
     @ApiAccessLog
     @Idempotent(value = "login", expire = 1, timeUnit = TimeUnit.MINUTES)
     @PostMapping("/login")
     public R<Map<String, Object>> login(@RequestBody Map<String, String> loginRequest) {
         String authNo = loginRequest.get("authNo");
-        String password = loginRequest.get("password");
 
-        // Spring Security 通过 BCryptPasswordEncoder 自动验证密码
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(authNo, password));
+        // SSO 模式 → 委托 ssoLogin
+        if (ssoAuthProvider != null && ssoAuthProvider.enabled()) {
+            return ssoLogin(loginRequest);
+        }
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String token = jwtTokenProvider.generateToken(authNo, userDetails.getAuthorities());
+        // Mock 模式 — 跳过密码验证，返回配置的固定用户
+        return mockLogin(authNo);
+    }
 
-        SysUser sysUser = sysUserService.getByAuthNo(authNo);
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+    /**
+     * Mock 登录：使用 login.mock 配置的用户信息 + 动态角色 → JWT。
+     * 自动同步用户到 sys_user 表，记录登录时间。
+     */
+    private R<Map<String, Object>> mockLogin(String authNo) {
+        String mockAuthNo = loginMockProperties.getAuthNo();
+        log.info("Mock login: input={}, using mock user={}", authNo, mockAuthNo);
 
-        Map<String, Object> userInfo = new HashMap<>();
-        userInfo.put("authNo", authNo);
-        userInfo.put("realName", sysUser != null ? sysUser.getRealName() : "");
+        // 构建用户扩展信息（从配置读取）
+        Map<String, Object> extInfo = new LinkedHashMap<>();
+        extInfo.put("authNo", mockAuthNo);
+        extInfo.put("tellername", loginMockProperties.getRealName());
+        extInfo.put("ad", loginMockProperties.getAdAccount());
+        extInfo.put("branchId", loginMockProperties.getBranchId());
+        extInfo.put("branchName", loginMockProperties.getBranchName());
+        extInfo.put("notesId", loginMockProperties.getNotesId());
+        extInfo.put("branchIdList", List.of(
+            Map.of("branchId", loginMockProperties.getBranchId(),
+                   "branchName", loginMockProperties.getBranchName())
+        ));
+
+        // 同步到 sys_user（upsert + 更新 last_login_time）
+        SysUser finalUser = sysUserService.syncUserInfo(extInfo);
+
+        // 角色从配置读取
+        List<String> roles = loginMockProperties.getRoles();
+
+        // 生成 JWT
+        String token = jwtTokenProvider.generateToken(mockAuthNo,
+            roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList()));
+
+        // 构建响应
+        Map<String, Object> userInfo = new LinkedHashMap<>();
+        userInfo.put("authNo", mockAuthNo);
+        userInfo.put("realName", finalUser != null ? finalUser.getRealName() : "");
+        userInfo.put("tellername", loginMockProperties.getRealName());
+        userInfo.put("ad", loginMockProperties.getAdAccount());
+        userInfo.put("branchId", loginMockProperties.getBranchId());
+        userInfo.put("branchName", loginMockProperties.getBranchName());
+        userInfo.put("notesId", loginMockProperties.getNotesId());
         userInfo.put("roles", roles);
 
         Map<String, Object> result = new HashMap<>();
         result.put("token", token);
         result.put("userInfo", userInfo);
-
         return R.ok(result);
     }
 
@@ -82,20 +118,20 @@ public class AuthController {
             return R.fail(400, "Missing SSO ticket");
         }
 
-        // Step 1: Validate SSO ticket -> get userId (authNo)
+        // Step 1: Validate SSO ticket → get userId (authNo)
         String authNo = ssoAuthProvider.authenticate(ticket);
         if (authNo == null || authNo.isBlank()) {
             return R.fail(401, "SSO authentication failed");
         }
 
-        // Step 2: Query user extended info from external API (TODO -> mock for now)
+        // Step 2: Query user extended info from external API (TODO → mock for now)
         Map<String, Object> extInfo = ssoAuthProvider.getUserInfo(authNo);
         if (extInfo == null) {
             extInfo = new HashMap<>();
             extInfo.put("authNo", authNo);
         }
 
-        // Step 3: Sync to sys_user (upsert + update last_login_time), use return value directly
+        // Step 3: Sync to sys_user (upsert + update last_login_time)
         SysUser finalUser = sysUserService.syncUserInfo(extInfo);
 
         // Step 4: Load roles and generate JWT
