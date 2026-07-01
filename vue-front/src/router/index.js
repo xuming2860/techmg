@@ -53,16 +53,19 @@ router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
 
   if (to.path === '/login') {
-    if (userStore.isLoggedIn) return next('/')
+    if (userStore.isLoggedIn && userStore.userInfo) return next('/')
     return next()
   }
 
-  if (!userStore.isLoggedIn) return next('/login')
+  // 未登录或 userInfo 缺失 → 强制跳转登录页
+  if (!userStore.isLoggedIn || !userStore.userInfo) {
+    userStore.logout() // 清除残留的无效 token
+    return next('/login')
+  }
 
   // User is logged in but dynamic routes may not be loaded yet (page refresh)
   if (!userStore.routesLoaded) {
     await userStore.loadRoutes()
-    // After loading routes, retry the navigation to the originally requested path
     return next({ ...to, replace: true })
   }
 

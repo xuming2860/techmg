@@ -6,11 +6,17 @@ import { encrypt, decrypt } from '@/utils/crypto'
 
 function loadUserInfoFromStorage() {
   const cached = localStorage.getItem('userInfo')
-  if (cached) {
+  if (!cached) return null
+  // Try AES decrypt first, fallback to plain JSON
+  try {
     const info = decrypt(cached)
     if (info) return info
+  } catch {}
+  try {
+    return JSON.parse(cached)
+  } catch {
+    return null
   }
-  return null
 }
 
 export const useUserStore = defineStore('user', () => {
@@ -30,9 +36,14 @@ export const useUserStore = defineStore('user', () => {
 
   function setUserInfo(info) {
     userInfo.value = info
-    // AES encrypt before localStorage
-    localStorage.setItem('userInfo', encrypt(info))
     roles.value = info.roles || []
+    // AES encrypt before localStorage, fallback to plain JSON
+    try {
+      localStorage.setItem('userInfo', encrypt(info))
+    } catch (e) {
+      console.warn('[UserStore] encrypt failed, storing plain:', e)
+      localStorage.setItem('userInfo', JSON.stringify(info))
+    }
   }
 
   function setMenus(val) {
