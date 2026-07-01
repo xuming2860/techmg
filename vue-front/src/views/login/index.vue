@@ -7,25 +7,20 @@
         <p>工商银行上海研发基地</p>
       </div>
 
+      <!-- 加载中 / Mock 自动登录中 -->
+      <template v-if="authMode === '' || authMode === 'mock'">
+        <div style="text-align: center; padding: 20px; color: #8f959e;">
+          <el-icon class="is-loading" :size="20"><Loading /></el-icon>
+          <p style="margin-top: 8px;">{{ statusText }}</p>
+        </div>
+      </template>
+
       <!-- SSO 模式 -->
-      <template v-if="authMode === 'sso'">
+      <template v-else-if="authMode === 'sso'">
         <el-button type="primary" size="large" style="width: 100%; height: 44px; font-size: 15px"
           :loading="loading" @click="handleSsoLogin">
           统一认证登录
         </el-button>
-      </template>
-
-      <!-- Mock 模式 -->
-      <template v-else-if="authMode === 'mock'">
-        <el-button type="primary" size="large" style="width: 100%; height: 44px; font-size: 15px"
-          :loading="loading" @click="handleMockLogin">
-          一键登录（模拟模式）
-        </el-button>
-      </template>
-
-      <!-- 加载中 -->
-      <template v-else>
-        <div style="text-align: center; padding: 20px; color: #8f959e;">正在获取认证配置...</div>
       </template>
     </div>
   </div>
@@ -35,6 +30,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Loading } from '@element-plus/icons-vue'
 import { login, getAuthConfig, ssoLoginUrl, ssoLogin } from '@/api/auth'
 import { getUserMenuTree } from '@/api/system/menu'
 import { useUserStore } from '@/store/user'
@@ -42,10 +38,11 @@ import { useUserStore } from '@/store/user'
 const router = useRouter()
 const userStore = useUserStore()
 
-const authMode = ref('')        // 'sso' | 'mock'
+const authMode = ref('')        // '' | 'sso' | 'mock'
 const loading = ref(false)
+const statusText = ref('正在获取认证配置...')
 
-// ========== 通用：登录成功后处理 ==========
+// ========== 通用：登录成功 → 跳转 ==========
 
 async function afterLogin(data) {
   userStore.setToken(data.token)
@@ -56,25 +53,23 @@ async function afterLogin(data) {
     userStore.setMenus(tree || [])
   } catch {}
 
-  ElMessage.success('登录成功')
   router.replace('/')
 }
 
-// ========== Mock 模式 ==========
+// ========== Mock 自动登录 ==========
 
-async function handleMockLogin() {
-  loading.value = true
+async function autoMockLogin() {
+  statusText.value = '正在登录...'
   try {
     const data = await login({ authNo: '', password: '' })
     await afterLogin(data)
+    // afterLogin 里 router.replace 跳走了，不会再显示失败
   } catch {
-    ElMessage.error('登录失败，请重试')
-  } finally {
-    loading.value = false
+    statusText.value = '登录失败，请刷新页面重试'
   }
 }
 
-// ========== SSO 模式 ==========
+// ========== SSO 登录 ==========
 
 async function handleSsoLogin() {
   loading.value = true
@@ -92,38 +87,44 @@ async function handleSsoLogin() {
   }
 }
 
-// ========== 初始化：查询认证模式 + 处理 SSO 回调 ==========
+// ========== 初始化 ==========
 
 onMounted(async () => {
-  // 1. 查询后端认证模式
+  // 1. 处理 SSO 回调（URL 带 ?ticket=xxx）
+  const urlParams = new URLSearchParams(window.location.search)
+  const ticket = urlParams.get('ticket')
+  if (ticket) {
+    loading.value = true
+    authMode.value = 'sso'
+    statusText.value = '正在验证统一认证...'
+    try {
+      const res = await ssoLogin(ticket)
+      await afterLogin(res)
+      return
+    } catch (e) {
+      console.error('SSO login failed:', e)
+      ElMessage.error('统一认证登录失败')
+      window.history.replaceState(null, '', window.location.pathname)
+      loading.value = false
+      statusText.value = ''
+      return
+    }
+  }
+
+  // 2. 查询后端认证模式
   try {
     const config = await getAuthConfig()
     if (config.ssoEnabled) {
       authMode.value = 'sso'
     } else {
+      // Mock 模式 — 自动登录，用户无感知
       authMode.value = 'mock'
+      await autoMockLogin()
     }
   } catch {
-    // 查询失败，默认走 mock 模式
+    // 查询失败，默认自动 mock 登录
     authMode.value = 'mock'
-  }
-
-  // 2. 处理 SSO 回调（URL 带 ticket 参数）
-  const urlParams = new URLSearchParams(window.location.search)
-  const ticket = urlParams.get('ticket')
-  if (ticket) {
-    loading.value = true
-    try {
-      const res = await ssoLogin(ticket)
-      await afterLogin(res)
-      return // afterLogin 里会 router.replace('/')
-    } catch (e) {
-      console.error('SSO login failed:', e)
-      ElMessage.error('统一认证登录失败')
-      window.history.replaceState(null, '', window.location.pathname)
-    } finally {
-      loading.value = false
-    }
+    await autoMockLogin()
   }
 })
 </script>
