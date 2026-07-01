@@ -30,12 +30,13 @@ public class TechReformSubtaskController {
      */
     @ApiAccessLog
     @GetMapping("/list")
-    public R<IPage<TechReformSubtask>> list(@RequestParam(defaultValue = "1") Integer page,
-                                             @RequestParam(defaultValue = "10") Integer size,
-                                             @RequestParam(required = false) Long parentTaskId,
-                                             @RequestParam(required = false) String status) {
+    public R<IPage<TechReformSubtask>> list(@RequestParam(name = "page", defaultValue = "1") Integer page,
+                                             @RequestParam(name = "size", defaultValue = "10") Integer size,
+                                             @RequestParam(name = "parentTaskId", required = false) Long parentTaskId,
+                                             @RequestParam(name = "status", required = false) String status,
+                                             @RequestParam(name = "keyword", required = false) String keyword) {
         Page<TechReformSubtask> pageReq = new Page<>(page, size);
-        return R.ok(techReformSubtaskService.pageSubtasks(pageReq, parentTaskId, status));
+        return R.ok(techReformSubtaskService.pageSubtasks(pageReq, parentTaskId, status, keyword));
     }
 
     /**
@@ -43,7 +44,7 @@ public class TechReformSubtaskController {
      */
     @ApiAccessLog
     @GetMapping("/{id}")
-    public R<TechReformSubtask> getSubtask(@PathVariable Long id) {
+    public R<TechReformSubtask> getSubtask(@PathVariable("id") Long id) {
         TechReformSubtask subtask = techReformSubtaskService.getById(id);
         if (subtask == null) {
             return R.fail(ResultCode.NOT_FOUND, "子任务不存在");
@@ -68,7 +69,7 @@ public class TechReformSubtaskController {
     @ApiAccessLog
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('PLATFORM_ADMIN', 'DEPT_ADMIN')")
-    public R<TechReformSubtask> updateSubtask(@PathVariable Long id, @RequestBody TechReformSubtask subtask) {
+    public R<TechReformSubtask> updateSubtask(@PathVariable("id") Long id, @RequestBody TechReformSubtask subtask) {
         TechReformSubtask existing = techReformSubtaskService.getById(id);
         if (existing == null) {
             return R.fail(ResultCode.NOT_FOUND, "子任务不存在");
@@ -84,7 +85,7 @@ public class TechReformSubtaskController {
     @ApiAccessLog
     @PutMapping("/{id}/status")
     @PreAuthorize("hasAnyRole('PLATFORM_ADMIN', 'DEPT_ADMIN')")
-    public R<Void> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+    public R<Void> updateStatus(@PathVariable("id") Long id, @RequestBody Map<String, String> body) {
         TechReformSubtask existing = techReformSubtaskService.getById(id);
         if (existing == null) {
             return R.fail(ResultCode.NOT_FOUND, "子任务不存在");
@@ -103,7 +104,7 @@ public class TechReformSubtaskController {
     @ApiAccessLog
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
-    public R<Void> deleteSubtask(@PathVariable Long id) {
+    public R<Void> deleteSubtask(@PathVariable("id") Long id) {
         TechReformSubtask existing = techReformSubtaskService.getById(id);
         if (existing == null) {
             return R.fail(ResultCode.NOT_FOUND, "子任务不存在");

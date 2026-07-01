@@ -36,11 +36,11 @@ public class TechReformTaskController {
      */
     @ApiAccessLog
     @GetMapping("/list")
-    public R<IPage<TechReformTask>> list(@RequestParam(defaultValue = "1") Integer page,
-                                          @RequestParam(defaultValue = "10") Integer size,
-                                          @RequestParam(required = false) String keyword,
-                                          @RequestParam(required = false) String category,
-                                          @RequestParam(required = false) String status) {
+    public R<IPage<TechReformTask>> list(@RequestParam(name = "page", defaultValue = "1") Integer page,
+                                          @RequestParam(name = "size", defaultValue = "10") Integer size,
+                                          @RequestParam(name = "keyword", required = false) String keyword,
+                                          @RequestParam(name = "category", required = false) String category,
+                                          @RequestParam(name = "status", required = false) String status) {
         Page<TechReformTask> pageReq = new Page<>(page, size);
         return R.ok(techReformTaskService.pageTasks(pageReq, keyword, category, status));
     }
@@ -50,7 +50,7 @@ public class TechReformTaskController {
      */
     @ApiAccessLog
     @GetMapping("/{id}")
-    public R<TechReformTask> getTask(@PathVariable Long id) {
+    public R<TechReformTask> getTask(@PathVariable("id") Long id) {
         TechReformTask task = techReformTaskService.getById(id);
         if (task == null) {
             return R.fail(ResultCode.NOT_FOUND, "任务不存在");

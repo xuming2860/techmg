@@ -56,12 +56,12 @@ public class TechReformItemController {
      */
     @ApiAccessLog
     @GetMapping("/list")
-    public R<IPage<TechReformItem>> list(@RequestParam(defaultValue = "1") Integer page,
-                                          @RequestParam(defaultValue = "10") Integer size,
-                                          @RequestParam(required = false) Long subtaskId,
-                                          @RequestParam(required = false) String appName,
-                                          @RequestParam(required = false) String status,
-                                          @RequestParam(required = false) String keyword) {
+    public R<IPage<TechReformItem>> list(@RequestParam(name = "page", defaultValue = "1") Integer page,
+                                          @RequestParam(name = "size", defaultValue = "10") Integer size,
+                                          @RequestParam(name = "subtaskId", required = false) Long subtaskId,
+                                          @RequestParam(name = "appName", required = false) String appName,
+                                          @RequestParam(name = "status", required = false) String status,
+                                          @RequestParam(name = "keyword", required = false) String keyword) {
         Page<TechReformItem> pageReq = new Page<>(page, size);
 
         // 非平台管理员需要按部门过滤
@@ -90,7 +90,7 @@ public class TechReformItemController {
     @ApiAccessLog
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('PLATFORM_ADMIN', 'DEPT_ADMIN', 'DEPT_DBA')")
-    public R<TechReformItem> updateItem(@PathVariable Long id, @RequestBody TechReformItem item) {
+    public R<TechReformItem> updateItem(@PathVariable("id") Long id, @RequestBody TechReformItem item) {
         TechReformItem existing = techReformItemService.getById(id);
         if (existing == null) {
             return R.fail(ResultCode.NOT_FOUND, "治理项不存在");
@@ -106,7 +106,7 @@ public class TechReformItemController {
     @ApiAccessLog
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
-    public R<Void> deleteItem(@PathVariable Long id) {
+    public R<Void> deleteItem(@PathVariable("id") Long id) {
         TechReformItem existing = techReformItemService.getById(id);
         if (existing == null) {
             return R.fail(ResultCode.NOT_FOUND, "治理项不存在");
