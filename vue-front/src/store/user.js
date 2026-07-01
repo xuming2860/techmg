@@ -21,8 +21,9 @@ function loadUserInfoFromStorage() {
 
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token') || '')
-  const userInfo = ref(loadUserInfoFromStorage())
-  const roles = ref([])
+  const savedInfo = loadUserInfoFromStorage()
+  const userInfo = ref(savedInfo)
+  const roles = ref(savedInfo?.roles || [])
   const permissions = ref([])
   const menus = ref([])
   const routesLoaded = ref(false)
