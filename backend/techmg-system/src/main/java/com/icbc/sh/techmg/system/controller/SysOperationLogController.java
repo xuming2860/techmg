@@ -34,7 +34,7 @@ public class SysOperationLogController {
 
     @Operation(summary = "根据ID查询操作日志详情")
     @GetMapping("/{id}")
-    public R<SysOperationLog> getById(@PathVariable Long id) {
+    public R<SysOperationLog> getById(@PathVariable("id") Long id) {
         SysOperationLog log = sysOperationLogService.getById(id);
         if (log == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "操作日志不存在");

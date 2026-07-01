@@ -33,7 +33,7 @@ public class SysDictTypeController {
 
     @Operation(summary = "根据ID查询字典类型")
     @GetMapping("/{id}")
-    public R<SysDictType> getById(@PathVariable Long id) {
+    public R<SysDictType> getById(@PathVariable("id") Long id) {
         SysDictType dictType = sysDictTypeService.getById(id);
         if (dictType == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "字典类型不存在");
@@ -70,7 +70,7 @@ public class SysDictTypeController {
     @Operation(summary = "删除字典类型")
     @ApiAccessLog
     @DeleteMapping("/{id}")
-    public R<Void> delete(@PathVariable Long id) {
+    public R<Void> delete(@PathVariable("id") Long id) {
         SysDictType dictType = sysDictTypeService.getById(id);
         if (dictType == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "字典类型不存在");

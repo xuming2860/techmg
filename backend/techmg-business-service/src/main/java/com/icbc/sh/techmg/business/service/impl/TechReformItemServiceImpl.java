@@ -17,7 +17,7 @@ public class TechReformItemServiceImpl extends ServiceImpl<TechReformItemMapper,
         implements TechReformItemService {
 
     @Override
-    public IPage<TechReformItem> pageItems(Page<TechReformItem> page, Long subtaskId, String appName, String status) {
+    public IPage<TechReformItem> pageItems(Page<TechReformItem> page, Long subtaskId, String appName, String status, String keyword) {
         LambdaQueryWrapper<TechReformItem> wrapper = new LambdaQueryWrapper<>();
         if (subtaskId != null) {
             wrapper.eq(TechReformItem::getSubtaskId, subtaskId);
@@ -27,6 +27,13 @@ public class TechReformItemServiceImpl extends ServiceImpl<TechReformItemMapper,
         }
         if (status != null && !status.isBlank()) {
             wrapper.eq(TechReformItem::getItemStatus, status);
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            wrapper.and(w -> w
+                .like(TechReformItem::getGovernanceItem, keyword)
+                .or()
+                .like(TechReformItem::getIssueDescription, keyword)
+            );
         }
         wrapper.orderByDesc(TechReformItem::getCreateTime);
         return this.page(page, wrapper);
@@ -66,9 +73,22 @@ public class TechReformItemServiceImpl extends ServiceImpl<TechReformItemMapper,
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public int batchUpdate(List<TechReformItem> items) {
+    public int batchUpdate(Long subtaskId, List<TechReformItem> items) {
         if (items == null || items.isEmpty()) {
             return 0;
+        }
+        // Validate: every item must belong to the given subtaskId
+        for (TechReformItem item : items) {
+            TechReformItem existing = this.getById(item.getId());
+            if (existing == null) {
+                throw new RuntimeException("治理项不存在: id=" + item.getId());
+            }
+            if (!subtaskId.equals(existing.getSubtaskId())) {
+                throw new RuntimeException(
+                    String.format("治理项 id=%d 不属于子任务 %d（实际属于 %d）",
+                        item.getId(), subtaskId, existing.getSubtaskId()));
+            }
+            item.setSubtaskId(subtaskId);
         }
         this.updateBatchById(items);
         return items.size();

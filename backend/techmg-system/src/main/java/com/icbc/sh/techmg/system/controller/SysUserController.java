@@ -44,7 +44,7 @@ public class SysUserController {
 
     @Operation(summary = "根据ID查询用户")
     @GetMapping("/{id}")
-    public R<SysUser> getById(@PathVariable Long id) {
+    public R<SysUser> getById(@PathVariable("id") Long id) {
         SysUser user = sysUserService.getById(id);
         if (user == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "用户不存在");
@@ -88,7 +88,7 @@ public class SysUserController {
     @Operation(summary = "删除用户（逻辑删除）")
     @ApiAccessLog
     @DeleteMapping("/{id}")
-    public R<Void> delete(@PathVariable Long id) {
+    public R<Void> delete(@PathVariable("id") Long id) {
         SysUser user = sysUserService.getById(id);
         if (user == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "用户不存在");
@@ -100,7 +100,7 @@ public class SysUserController {
     @Operation(summary = "分配用户角色")
     @ApiAccessLog
     @PostMapping("/{userId}/roles")
-    public R<Void> assignRoles(@PathVariable Long userId, @RequestBody UserRoleDTO dto) {
+    public R<Void> assignRoles(@PathVariable("userId") Long userId, @RequestBody UserRoleDTO dto) {
         SysUser user = sysUserService.getById(userId);
         if (user == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "用户不存在");
@@ -111,7 +111,7 @@ public class SysUserController {
 
     @Operation(summary = "获取用户角色")
     @GetMapping("/{userId}/roles")
-    public R<List<SysRole>> getUserRoles(@PathVariable Long userId) {
+    public R<List<SysRole>> getUserRoles(@PathVariable("userId") Long userId) {
         return R.ok(sysRoleService.getRolesByUserId(userId));
     }
 }

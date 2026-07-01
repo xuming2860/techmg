@@ -8,11 +8,11 @@ import com.icbc.sh.techmg.business.entity.TechReformItem;
 import java.util.List;
 
 public interface TechReformItemService extends IService<TechReformItem> {
-    IPage<TechReformItem> pageItems(Page<TechReformItem> page, Long subtaskId, String appName, String status);
+    IPage<TechReformItem> pageItems(Page<TechReformItem> page, Long subtaskId, String appName, String status, String keyword);
 
     int importItems(Long subtaskId, String mode, List<TechReformItem> items);
 
     List<TechReformItem> exportItems(Long subtaskId);
 
-    int batchUpdate(List<TechReformItem> items);
+    int batchUpdate(Long subtaskId, List<TechReformItem> items);
 }

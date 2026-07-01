@@ -86,7 +86,7 @@ public class TechReformTaskController {
     @ApiAccessLog
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
-    public R<TechReformTask> updateTask(@PathVariable Long id, @RequestBody TechReformTask task) {
+    public R<TechReformTask> updateTask(@PathVariable("id") Long id, @RequestBody TechReformTask task) {
         TechReformTask existing = techReformTaskService.getById(id);
         if (existing == null) {
             return R.fail(ResultCode.NOT_FOUND, "任务不存在");
@@ -102,7 +102,7 @@ public class TechReformTaskController {
     @ApiAccessLog
     @PutMapping("/{id}/status")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
-    public R<Void> updateStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+    public R<Void> updateStatus(@PathVariable("id") Long id, @RequestBody Map<String, String> body) {
         TechReformTask existing = techReformTaskService.getById(id);
         if (existing == null) {
             return R.fail(ResultCode.NOT_FOUND, "任务不存在");
@@ -121,7 +121,7 @@ public class TechReformTaskController {
     @ApiAccessLog
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('PLATFORM_ADMIN')")
-    public R<Void> deleteTask(@PathVariable Long id) {
+    public R<Void> deleteTask(@PathVariable("id") Long id) {
         TechReformTask existing = techReformTaskService.getById(id);
         if (existing == null) {
             return R.fail(ResultCode.NOT_FOUND, "任务不存在");

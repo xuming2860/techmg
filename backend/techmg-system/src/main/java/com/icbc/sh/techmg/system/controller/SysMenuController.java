@@ -53,7 +53,7 @@ public class SysMenuController {
 
     @Operation(summary = "根据ID查询菜单")
     @GetMapping("/{id}")
-    public R<SysMenu> getById(@PathVariable Long id) {
+    public R<SysMenu> getById(@PathVariable("id") Long id) {
         SysMenu menu = sysMenuService.getById(id);
         if (menu == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "菜单不存在");
@@ -84,7 +84,7 @@ public class SysMenuController {
     @Operation(summary = "删除菜单（检查子菜单）")
     @ApiAccessLog
     @DeleteMapping("/{id}")
-    public R<Void> delete(@PathVariable Long id) {
+    public R<Void> delete(@PathVariable("id") Long id) {
         SysMenu menu = sysMenuService.getById(id);
         if (menu == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "菜单不存在");

@@ -31,7 +31,7 @@ public class SysDeptController {
 
     @Operation(summary = "根据ID查询部门")
     @GetMapping("/{id}")
-    public R<SysDept> getById(@PathVariable Long id) {
+    public R<SysDept> getById(@PathVariable("id") Long id) {
         SysDept dept = sysDeptService.getById(id);
         if (dept == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "部门不存在");
@@ -62,7 +62,7 @@ public class SysDeptController {
     @Operation(summary = "删除部门（检查子部门）")
     @ApiAccessLog
     @DeleteMapping("/{id}")
-    public R<Void> delete(@PathVariable Long id) {
+    public R<Void> delete(@PathVariable("id") Long id) {
         SysDept dept = sysDeptService.getById(id);
         if (dept == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "部门不存在");

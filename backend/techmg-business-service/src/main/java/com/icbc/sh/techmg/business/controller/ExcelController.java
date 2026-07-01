@@ -23,7 +23,7 @@ public class ExcelController {
     @ApiAccessLog
     @Operation(summary = "下载Excel模板")
     @GetMapping("/template/{type}")
-    public void downloadTemplate(@PathVariable String type, HttpServletResponse response) throws IOException {
+    public void downloadTemplate(@PathVariable("type") String type, HttpServletResponse response) throws IOException {
         String[] headers;
         String sheetName;
         String fileName;

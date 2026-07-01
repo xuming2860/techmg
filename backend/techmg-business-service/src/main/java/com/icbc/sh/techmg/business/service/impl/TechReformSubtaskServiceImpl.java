@@ -15,13 +15,16 @@ public class TechReformSubtaskServiceImpl extends ServiceImpl<TechReformSubtaskM
         implements TechReformSubtaskService {
 
     @Override
-    public IPage<TechReformSubtask> pageSubtasks(Page<TechReformSubtask> page, Long parentTaskId, String status) {
+    public IPage<TechReformSubtask> pageSubtasks(Page<TechReformSubtask> page, Long parentTaskId, String status, String keyword) {
         LambdaQueryWrapper<TechReformSubtask> wrapper = new LambdaQueryWrapper<>();
         if (parentTaskId != null) {
             wrapper.eq(TechReformSubtask::getParentTaskId, parentTaskId);
         }
         if (status != null && !status.isBlank()) {
             wrapper.eq(TechReformSubtask::getStatus, status);
+        }
+        if (keyword != null && !keyword.isBlank()) {
+            wrapper.like(TechReformSubtask::getSubtaskName, keyword);
         }
         wrapper.orderByDesc(TechReformSubtask::getCreateTime);
         return this.page(page, wrapper);

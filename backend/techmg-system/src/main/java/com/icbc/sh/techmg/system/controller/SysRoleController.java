@@ -37,7 +37,7 @@ public class SysRoleController {
 
     @Operation(summary = "根据ID查询角色")
     @GetMapping("/{id}")
-    public R<SysRole> getById(@PathVariable Long id) {
+    public R<SysRole> getById(@PathVariable("id") Long id) {
         SysRole role = sysRoleService.getById(id);
         if (role == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "角色不存在");
@@ -68,7 +68,7 @@ public class SysRoleController {
     @Operation(summary = "删除角色")
     @ApiAccessLog
     @DeleteMapping("/{id}")
-    public R<Void> delete(@PathVariable Long id) {
+    public R<Void> delete(@PathVariable("id") Long id) {
         SysRole role = sysRoleService.getById(id);
         if (role == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "角色不存在");
@@ -79,14 +79,14 @@ public class SysRoleController {
 
     @Operation(summary = "获取角色的菜单列表")
     @GetMapping("/{roleId}/menus")
-    public R<List<SysMenu>> getRoleMenus(@PathVariable Long roleId) {
+    public R<List<SysMenu>> getRoleMenus(@PathVariable("roleId") Long roleId) {
         return R.ok(sysMenuService.getMenusByRoleId(roleId));
     }
 
     @Operation(summary = "分配角色菜单")
     @ApiAccessLog
     @PostMapping("/{roleId}/menus")
-    public R<Void> assignMenus(@PathVariable Long roleId, @RequestBody List<Long> menuIds) {
+    public R<Void> assignMenus(@PathVariable("roleId") Long roleId, @RequestBody List<Long> menuIds) {
         SysRole role = sysRoleService.getById(roleId);
         if (role == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "角色不存在");
