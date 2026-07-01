@@ -40,15 +40,14 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useUserStore } from '@/store/user'
-import { getUserMenuTree } from '@/api/system/menu'
-
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const userStore = useUserStore()
-const modules = ref([])
+
+const modules = computed(() => userStore.menus || [])
 
 const avatarText = computed(() => {
   const name = userStore.userInfo?.realName || '?'
@@ -71,15 +70,6 @@ const activeModule = computed(() => {
     }
   }
   return modules.value[0]?.id || 0
-})
-
-onMounted(async () => {
-  try {
-    const tree = await getUserMenuTree()
-    modules.value = tree || []
-  } catch {
-    modules.value = []
-  }
 })
 
 /** Find first leaf menu path recursively for directory nodes */

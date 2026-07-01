@@ -19,14 +19,16 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { getUserMenuTree } from '@/api/system/menu'
+import { useUserStore } from '@/store/user'
 import MenuItem from './MenuItem.vue'
 
 const route = useRoute()
+const userStore = useUserStore()
 const activeMenu = computed(() => route.path)
-const modules = ref([])
+
+const modules = computed(() => userStore.menus || [])
 
 const activeModuleId = computed(() => {
   const path = route.path
@@ -54,15 +56,6 @@ const activeModuleName = computed(() => {
 const sidebarMenus = computed(() => {
   const mod = modules.value.find(m => m.id === activeModuleId.value)
   return mod?.children || []
-})
-
-onMounted(async () => {
-  try {
-    const tree = await getUserMenuTree()
-    modules.value = tree || []
-  } catch {
-    modules.value = []
-  }
 })
 </script>
 
