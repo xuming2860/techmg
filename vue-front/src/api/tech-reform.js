@@ -57,9 +57,7 @@ export function importItems(subtaskId, file, mode) {
   const formData = new FormData()
   formData.append('file', file)
   formData.append('mode', mode)
-  return request.post(`/api/tech-reform/item/upload?subtaskId=${subtaskId}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  })
+  return request.post(`/api/tech-reform/item/upload?subtaskId=${subtaskId}`, formData)
 }
 export function exportItems(subtaskId) {
   return request.get(`/api/tech-reform/item/export?subtaskId=${subtaskId}`, {
@@ -69,9 +67,7 @@ export function exportItems(subtaskId) {
 export function batchUpdateItems(subtaskId, file) {
   const formData = new FormData()
   formData.append('file', file)
-  return request.post(`/api/tech-reform/item/batch-update?subtaskId=${subtaskId}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  })
+  return request.post(`/api/tech-reform/item/batch-update?subtaskId=${subtaskId}`, formData)
 }
 
 // === 字典 ===

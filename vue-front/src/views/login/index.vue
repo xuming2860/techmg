@@ -6,100 +6,123 @@
         <h2>技术管理平台</h2>
         <p>工商银行上海研发基地</p>
       </div>
-      <el-form :model="form" size="large">
-        <el-form-item>
-          <el-input v-model="form.authNo" placeholder="统一认证号" prefix-icon="User" />
-        </el-form-item>
-        <el-form-item>
-          <el-input
-            v-model="form.password"
-            type="password"
-            placeholder="密码"
-            prefix-icon="Lock"
-            show-password
-            @keyup.enter="handleLogin"
-          />
-        </el-form-item>
-        <el-form-item>
-          <el-button
-            type="primary"
-            style="width: 100%; height: 44px; font-size: 15px"
-            @click="handleLogin"
-          >
-            登 录
-          </el-button>
-        </el-form-item>
-      </el-form>
+
+      <!-- SSO 模式 -->
+      <template v-if="authMode === 'sso'">
+        <el-button type="primary" size="large" style="width: 100%; height: 44px; font-size: 15px"
+          :loading="loading" @click="handleSsoLogin">
+          统一认证登录
+        </el-button>
+      </template>
+
+      <!-- Mock 模式 -->
+      <template v-else-if="authMode === 'mock'">
+        <el-button type="primary" size="large" style="width: 100%; height: 44px; font-size: 15px"
+          :loading="loading" @click="handleMockLogin">
+          一键登录（模拟模式）
+        </el-button>
+      </template>
+
+      <!-- 加载中 -->
+      <template v-else>
+        <div style="text-align: center; padding: 20px; color: #8f959e;">正在获取认证配置...</div>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup>
-import { reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { login, getUserInfo, ssoLoginUrl, ssoLogin } from '@/api/auth'
+import { login, getAuthConfig, ssoLoginUrl, ssoLogin } from '@/api/auth'
 import { getUserMenuTree } from '@/api/system/menu'
 import { useUserStore } from '@/store/user'
 
 const router = useRouter()
 const userStore = useUserStore()
-const form = reactive({ authNo: '', password: '' })
-const isSsoMode = import.meta.env.VITE_SSO_ENABLED === 'true'
 
-async function handleLogin() {
-  if (isSsoMode) {
-    // SSO mode: redirect to SSO login
-    try {
-      const res = await ssoLoginUrl()
-      if (res.loginUrl) {
-        window.location.href = res.loginUrl
-        return
-      }
-    } catch (e) {
-      console.error('Failed to get SSO login URL:', e)
-    }
-    ElMessage.error('SSO登录服务暂不可用，请稍后再试')
-    return
-  }
+const authMode = ref('')        // 'sso' | 'mock'
+const loading = ref(false)
 
-  if (!form.authNo || !form.password) {
-    ElMessage.warning('请输入认证号和密码')
-    return
-  }
+// ========== 通用：登录成功后处理 ==========
+
+async function afterLogin(data) {
+  userStore.setToken(data.token)
+  userStore.setUserInfo(data.userInfo)
+
   try {
-    const data = await login(form)
-    userStore.setToken(data.token)
-    try {
-      const info = await getUserInfo()
-      userStore.setUserInfo(info.userInfo || info)
-      userStore.setRoles(info.roles || [])
-      userStore.setPermissions(info.permissions || [])
-    } catch {}
-    try {
-      const tree = await getUserMenuTree()
-      userStore.setMenus(tree || [])
-    } catch {}
-    ElMessage.success('登录成功')
-    router.push('/')
+    const tree = await getUserMenuTree()
+    userStore.setMenus(tree || [])
   } catch {}
+
+  ElMessage.success('登录成功')
+  router.replace('/')
 }
 
-// SSO callback handler (called when returning with ?ticket=xxx)
+// ========== Mock 模式 ==========
+
+async function handleMockLogin() {
+  loading.value = true
+  try {
+    const data = await login({ authNo: '', password: '' })
+    await afterLogin(data)
+  } catch {
+    ElMessage.error('登录失败，请重试')
+  } finally {
+    loading.value = false
+  }
+}
+
+// ========== SSO 模式 ==========
+
+async function handleSsoLogin() {
+  loading.value = true
+  try {
+    const res = await ssoLoginUrl()
+    if (res.loginUrl) {
+      window.location.href = res.loginUrl
+    } else {
+      ElMessage.warning('SSO 登录地址未配置')
+    }
+  } catch {
+    ElMessage.error('获取 SSO 登录地址失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+// ========== 初始化：查询认证模式 + 处理 SSO 回调 ==========
+
 onMounted(async () => {
+  // 1. 查询后端认证模式
+  try {
+    const config = await getAuthConfig()
+    if (config.ssoEnabled) {
+      authMode.value = 'sso'
+    } else {
+      authMode.value = 'mock'
+    }
+  } catch {
+    // 查询失败，默认走 mock 模式
+    authMode.value = 'mock'
+  }
+
+  // 2. 处理 SSO 回调（URL 带 ticket 参数）
   const urlParams = new URLSearchParams(window.location.search)
   const ticket = urlParams.get('ticket')
-  if (ticket && isSsoMode) {
+  if (ticket) {
+    loading.value = true
     try {
       const res = await ssoLogin(ticket)
-      userStore.setToken(res.token)
-      userStore.setUserInfo(res.userInfo)
-      await userStore.loadRoutes()
-      router.replace('/')
+      await afterLogin(res)
+      return // afterLogin 里会 router.replace('/')
     } catch (e) {
       console.error('SSO login failed:', e)
-      ElMessage.error('SSO登录失败')
+      ElMessage.error('统一认证登录失败')
       window.history.replaceState(null, '', window.location.pathname)
+    } finally {
+      loading.value = false
     }
   }
 })

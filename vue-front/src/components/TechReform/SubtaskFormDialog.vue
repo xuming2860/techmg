@@ -209,6 +209,21 @@ const dbTypeOptions = ref([])
 // Flattened department tree for select
 const deptOptions = ref([])
 
+// Safe parse: if value is a JSON string, parse it; otherwise return as-is.
+// Handle both string and already-parsed array cases from the API response.
+function safeParseArray(value) {
+  if (Array.isArray(value)) return value
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value)
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
+    }
+  }
+  return []
+}
+
 function flattenDeptTree(nodes, prefix = '') {
   const result = []
   for (const node of nodes) {
@@ -284,9 +299,9 @@ watch(
           subtaskName: props.subtask.subtaskName || '',
           description: props.subtask.description || '',
           dataSource: props.subtask.dataSource || 'NONE',
-          departments: props.subtask.departments || [],
+          departments: safeParseArray(props.subtask.departments),
           appScope: props.subtask.appScope || 'ALL',
-          dbTypes: props.subtask.dbTypes || [],
+          dbTypes: safeParseArray(props.subtask.dbTypes),
           startDate: props.subtask.startDate || '',
           endDate: props.subtask.endDate || '',
           affectNegativeAsset: props.subtask.affectNegativeAsset || false
@@ -366,9 +381,9 @@ async function handleSubmit() {
       subtaskName: form.subtaskName,
       description: form.description,
       dataSource: form.dataSource,
-      departments: form.departments,
+      departments: JSON.stringify(form.departments || []),
       appScope: form.appScope,
-      dbTypes: form.dbTypes,
+      dbTypes: JSON.stringify(form.dbTypes || []),
       startDate: form.startDate,
       endDate: form.endDate,
       affectNegativeAsset: form.affectNegativeAsset

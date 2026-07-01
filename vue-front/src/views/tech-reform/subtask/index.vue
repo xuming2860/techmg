@@ -389,7 +389,19 @@ async function fetchSubtasks() {
     if (queryForm.keyword) params.keyword = queryForm.keyword
 
     const res = await pageSubtasks(params)
-    tableData.value = (res && res.records) ? res.records : []
+    const records = (res && res.records) ? res.records : []
+    // Parse JSON string fields from backend into arrays for display
+    records.forEach((r) => {
+      if (typeof r.departments === 'string') {
+        try { r.departments = JSON.parse(r.departments) } catch { r.departments = [] }
+      }
+      if (!Array.isArray(r.departments)) r.departments = []
+      if (typeof r.dbTypes === 'string') {
+        try { r.dbTypes = JSON.parse(r.dbTypes) } catch { r.dbTypes = [] }
+      }
+      if (!Array.isArray(r.dbTypes)) r.dbTypes = []
+    })
+    tableData.value = records
     total.value = (res && res.total) || 0
   } finally {
     loading.value = false

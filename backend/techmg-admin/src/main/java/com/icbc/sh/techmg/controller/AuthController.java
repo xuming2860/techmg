@@ -178,6 +178,19 @@ public class AuthController {
             .collect(Collectors.toList());
     }
 
+    /**
+     * 查询认证模式配置 — 前端启动时调用，决定走 SSO 还是 Mock 登录。
+     */
+    @GetMapping("/config")
+    public R<Map<String, Object>> authConfig() {
+        boolean ssoEnabled = ssoAuthProvider != null && ssoAuthProvider.enabled();
+        Map<String, Object> config = new LinkedHashMap<>();
+        config.put("ssoEnabled", ssoEnabled);
+        config.put("loginUrl", ssoEnabled && ssoAuthProvider.getLoginUrl() != null
+                ? ssoAuthProvider.getLoginUrl() : "");
+        return R.ok(config);
+    }
+
     @ApiAccessLog
     @PostMapping("/logout")
     public R<Void> logout() {
