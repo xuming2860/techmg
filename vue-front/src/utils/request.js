@@ -6,6 +6,9 @@ const request = axios.create({
   timeout: 30000
 })
 
+// 防止 token 过期时多个并发请求重复跳转登录页
+let isRedirecting = false
+
 // 请求拦截器
 request.interceptors.request.use(
   config => {
@@ -36,12 +39,11 @@ request.interceptors.response.use(
     // 按错误码分类提示
     switch (res.code) {
       case 401:
-        ElMessage.error('登录已过期，请重新登录')
-        localStorage.removeItem('token')
-        window.location.href = '/login'
+        handleAuthExpired()
         break
       case 403:
-        ElMessage.error('无权限访问')
+        // 403 也可能是 token 过期（旧版兼容）→ 清除 token 重登
+        handleAuthExpired()
         break
       case 404:
         ElMessage.error('请求的资源不存在')
@@ -55,9 +57,23 @@ request.interceptors.response.use(
     return Promise.reject(new Error(res.message || '请求失败'))
   },
   error => {
+    // HTTP 401 → token 过期
+    if (error.response && error.response.status === 401) {
+      handleAuthExpired()
+    }
     ElMessage.error(error.message || '网络异常')
     return Promise.reject(error)
   }
 )
+
+function handleAuthExpired() {
+  if (isRedirecting) return // 已经在跳转中，不再重复
+  isRedirecting = true
+
+  ElMessage.error('登录已过期，请重新登录')
+  localStorage.removeItem('token')
+  localStorage.removeItem('userInfo')
+  window.location.href = '/login'
+}
 
 export default request
