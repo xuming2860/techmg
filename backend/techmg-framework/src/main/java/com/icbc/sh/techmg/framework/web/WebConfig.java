@@ -1,7 +1,6 @@
 package com.icbc.sh.techmg.framework.web;
 
 import com.icbc.sh.techmg.common.model.R;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,15 +11,11 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer, ResponseBodyAdvice<Object> {
-
-    @Autowired
-    private IdempotentInterceptor idempotentInterceptor;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
@@ -53,10 +48,7 @@ public class WebConfig implements WebMvcConfigurer, ResponseBodyAdvice<Object> {
         return R.ok(body);
     }
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(idempotentInterceptor).addPathPatterns("/api/**");
-    }
+    // 幂等拦截器已移除，待行内 NOS 封装后重新注册
 
     @Bean
     public FilterRegistrationBean<TraceIdFilter> traceIdFilter() {

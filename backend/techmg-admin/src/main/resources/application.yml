@@ -47,18 +47,18 @@ spring:
       wall:
         enabled: true
 
-  # Redis
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      password:
-      database: 0
-      lettuce:
-        pool:
-          max-active: 8
-          max-idle: 8
-          min-idle: 0
+  # Redis — 待行内 NOS 封装后重新启用
+  # data:
+  #   redis:
+  #     host: localhost
+  #     port: 6379
+  #     password:
+  #     database: 0
+  #     lettuce:
+  #       pool:
+  #         max-active: 8
+  #         max-idle: 8
+  #         min-idle: 0
 
 # MyBatis-Plus
 mybatis-plus:
