@@ -25,7 +25,7 @@ INSERT INTO sys_menu (id, parent_id, menu_name, path, component, icon, type, per
 (11, 10, '技改任务管理', '', '', 'List', 0, '', 1, 1, 1),
 (12, 11, '任务总览', '/tech-reform/overview', 'views/tech-reform/overview/index', '', 1, '', 1, 1, 1),
 (13, 11, '子任务管理', '/tech-reform/subtask', 'views/tech-reform/subtask/index', '', 1, '', 2, 1, 1),
-(14, 11, '技改任务统计', '/tech-reform/stats', 'views/tech-reform/stats/index', '', 1, '', 3, 1, 1),
+-- (14) 技改任务统计 — v2.0已移除，功能并入任务总览和子任务管理
 
 -- 数据库管理
 (15, 10, '数据库管理', '', '', 'Coin', 0, '', 2, 1, 1),
