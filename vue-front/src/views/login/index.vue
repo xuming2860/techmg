@@ -45,14 +45,23 @@ const statusText = ref('正在获取认证配置...')
 // ========== 通用：登录成功 → 跳转 ==========
 
 async function afterLogin(data) {
+  console.log('[Login] afterLogin received:', data)
   userStore.setToken(data.token)
-  userStore.setUserInfo(data.userInfo)
+  if (data.userInfo) {
+    userStore.setUserInfo(data.userInfo)
+  } else {
+    // fallback: data might be the userInfo itself
+    userStore.setUserInfo(data)
+  }
 
   try {
     const tree = await getUserMenuTree()
     userStore.setMenus(tree || [])
-  } catch {}
+  } catch (e) {
+    console.warn('[Login] getUserMenuTree failed:', e)
+  }
 
+  console.log('[Login] token set:', !!userStore.token, 'userInfo:', userStore.userInfo)
   router.replace('/')
 }
 
@@ -62,9 +71,10 @@ async function autoMockLogin() {
   statusText.value = '正在登录...'
   try {
     const data = await login({ authNo: '', password: '' })
+    console.log('[Login] mock login response:', data)
     await afterLogin(data)
-    // afterLogin 里 router.replace 跳走了，不会再显示失败
-  } catch {
+  } catch (e) {
+    console.error('[Login] mock login failed:', e)
     statusText.value = '登录失败，请刷新页面重试'
   }
 }
