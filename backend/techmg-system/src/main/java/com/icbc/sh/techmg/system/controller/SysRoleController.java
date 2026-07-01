@@ -29,8 +29,8 @@ public class SysRoleController {
 
     @Operation(summary = "分页查询角色列表")
     @GetMapping("/list")
-    public R<IPage<SysRole>> list(@RequestParam(defaultValue = "1") Integer page,
-                                   @RequestParam(defaultValue = "10") Integer size) {
+    public R<IPage<SysRole>> list(@RequestParam(name = "page", defaultValue = "1") Integer page,
+                                   @RequestParam(name = "size", defaultValue = "10") Integer size) {
         Page<SysRole> p = new Page<>(page, size);
         return R.ok(sysRoleService.page(p));
     }

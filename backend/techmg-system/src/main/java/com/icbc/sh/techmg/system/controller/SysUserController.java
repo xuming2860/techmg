@@ -32,9 +32,9 @@ public class SysUserController {
 
     @Operation(summary = "分页查询用户列表")
     @GetMapping("/list")
-    public R<IPage<SysUser>> list(@RequestParam(defaultValue = "1") Integer page,
-                                   @RequestParam(defaultValue = "10") Integer size,
-                                   @RequestParam(required = false) String keyword) {
+    public R<IPage<SysUser>> list(@RequestParam(name = "page", defaultValue = "1") Integer page,
+                                   @RequestParam(name = "size", defaultValue = "10") Integer size,
+                                   @RequestParam(name = "keyword", required = false) String keyword) {
         UserQueryDTO dto = new UserQueryDTO();
         dto.setPage(page);
         dto.setSize(size);

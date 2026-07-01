@@ -23,12 +23,12 @@ public class SysOperationLogController {
 
     @Operation(summary = "分页查询操作日志")
     @GetMapping("/list")
-    public R<IPage<SysOperationLog>> list(@RequestParam(required = false) String keyword,
-                                           @RequestParam(required = false) String module,
-                                           @RequestParam(required = false) LocalDateTime startTime,
-                                           @RequestParam(required = false) LocalDateTime endTime,
-                                           @RequestParam(defaultValue = "1") int page,
-                                           @RequestParam(defaultValue = "10") int size) {
+    public R<IPage<SysOperationLog>> list(@RequestParam(name = "keyword", required = false) String keyword,
+                                           @RequestParam(name = "module", required = false) String module,
+                                           @RequestParam(name = "startTime", required = false) LocalDateTime startTime,
+                                           @RequestParam(name = "endTime", required = false) LocalDateTime endTime,
+                                           @RequestParam(name = "page", defaultValue = "1") int page,
+                                           @RequestParam(name = "size", defaultValue = "10") int size) {
         return R.ok(sysOperationLogService.queryPage(keyword, module, startTime, endTime, page, size));
     }
 

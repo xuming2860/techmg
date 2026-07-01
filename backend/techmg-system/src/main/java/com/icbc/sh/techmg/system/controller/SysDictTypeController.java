@@ -25,8 +25,8 @@ public class SysDictTypeController {
 
     @Operation(summary = "分页查询字典类型")
     @GetMapping("/list")
-    public R<IPage<SysDictType>> list(@RequestParam(defaultValue = "1") int page,
-                                       @RequestParam(defaultValue = "10") int size) {
+    public R<IPage<SysDictType>> list(@RequestParam(name = "page", defaultValue = "1") int page,
+                                       @RequestParam(name = "size", defaultValue = "10") int size) {
         Page<SysDictType> p = new Page<>(page, size);
         return R.ok(sysDictTypeService.page(p));
     }
