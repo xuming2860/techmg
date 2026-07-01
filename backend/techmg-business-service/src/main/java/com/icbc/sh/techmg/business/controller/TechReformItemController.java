@@ -60,16 +60,17 @@ public class TechReformItemController {
                                           @RequestParam(defaultValue = "10") Integer size,
                                           @RequestParam(required = false) Long subtaskId,
                                           @RequestParam(required = false) String appName,
-                                          @RequestParam(required = false) String status) {
+                                          @RequestParam(required = false) String status,
+                                          @RequestParam(required = false) String keyword) {
         Page<TechReformItem> pageReq = new Page<>(page, size);
 
         // 非平台管理员需要按部门过滤
         String branchId = getCurrentUserBranchId();
-        log.debug("pageItems: subtaskId={}, appName={}, status={}, userBranchId={}",
-                subtaskId, appName, status, branchId);
+        log.debug("pageItems: subtaskId={}, appName={}, status={}, keyword={}, userBranchId={}",
+                subtaskId, appName, status, keyword, branchId);
 
         // TODO: service 层需支持 branchId 参数以按部门过滤
-        return R.ok(techReformItemService.pageItems(pageReq, subtaskId, appName, status));
+        return R.ok(techReformItemService.pageItems(pageReq, subtaskId, appName, status, keyword));
     }
 
     /**
@@ -166,7 +167,7 @@ public class TechReformItemController {
      */
     @ApiAccessLog
     @GetMapping("/export")
-    public void exportItems(@RequestParam Long subtaskId, HttpServletResponse response) throws IOException {
+    public void exportItems(@RequestParam("subtaskId") Long subtaskId, HttpServletResponse response) throws IOException {
         List<TechReformItem> items = techReformItemService.exportItems(subtaskId);
         if (items.isEmpty()) {
             response.setContentType("application/json;charset=UTF-8");
@@ -209,7 +210,8 @@ public class TechReformItemController {
     @ApiAccessLog
     @PostMapping("/batch-update")
     @PreAuthorize("hasAnyRole('PLATFORM_ADMIN', 'DEPT_ADMIN', 'DEPT_DBA')")
-    public R<Integer> batchUpdateItems(@RequestParam("file") MultipartFile file) throws IOException {
+    public R<Integer> batchUpdateItems(@RequestParam("file") MultipartFile file,
+                                       @RequestParam("subtaskId") Long subtaskId) throws IOException {
         if (file.isEmpty()) {
             return R.fail(ResultCode.PARAM_ERROR, "上传文件不能为空");
         }
@@ -244,8 +246,8 @@ public class TechReformItemController {
             return R.fail(ResultCode.PARAM_ERROR, "未解析到有效数据行");
         }
 
-        int count = techReformItemService.batchUpdate(items);
-        log.info("批量更新治理项完成, count={}", count);
+        int count = techReformItemService.batchUpdate(subtaskId, items);
+        log.info("批量更新治理项完成, subtaskId={}, count={}", subtaskId, count);
         return R.ok(count);
     }
 
