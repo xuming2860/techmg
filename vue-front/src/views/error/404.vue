@@ -5,14 +5,14 @@
       <h2>页面不存在</h2>
       <p>您访问的页面不存在或已被移除</p>
       <div class="error-actions">
-        <el-button type="primary" @click="$router.push('/')">返回首页</el-button>
+        <el-button type="primary" @click="$router.push({ name: '首页' })">返回首页</el-button>
         <el-button @click="$router.go(-1)">返回上页</el-button>
       </div>
     </div>
   </div>
 </template>
 
-<script setup></script>
+<script setup lang="ts"></script>
 
 <style lang="scss" scoped>
 .error-page {

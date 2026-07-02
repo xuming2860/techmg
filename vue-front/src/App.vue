@@ -4,6 +4,6 @@
   </ErrorBoundary>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import ErrorBoundary from '@/components/ErrorBoundary.vue'
 </script>

@@ -191,7 +191,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Download, Upload } from '@element-plus/icons-vue'
@@ -199,11 +199,16 @@ import { pageSubtasks, pageItems, updateItem, deleteItem, exportItems, batchUpda
 import { useUserStore } from '@/store/user'
 import ImportWizard from '@/components/TechReform/ImportWizard.vue'
 
-const props = defineProps({
-  defaultSubtaskId: { type: [String, Number], default: null }
+interface Props {
+  defaultSubtaskId?: string | number | null
+}
+const props = withDefaults(defineProps<Props>(), {
+  defaultSubtaskId: null
 })
 
-const emit = defineEmits(['import-wizard-open'])
+const emit = defineEmits<{
+  (e: 'import-wizard-open', subtaskId: string | number): void
+}>()
 
 const userStore = useUserStore()
 
@@ -255,7 +260,7 @@ async function loadSubtasks() {
   try {
     const res = await pageSubtasks({ page: 1, size: 100 })
     subtaskOptions.value = (res && res.records) ? res.records : []
-  } catch {
+  } catch (err) {
     subtaskOptions.value = []
   }
 }
@@ -270,7 +275,7 @@ async function fetchData() {
 
   loading.value = true
   try {
-    const params = {
+    const params: Record<string, any> = {
       page: queryForm.page,
       size: queryForm.size,
       subtaskId: selectedSubtaskId.value
@@ -373,7 +378,7 @@ async function handleDownload() {
     a.click()
     URL.revokeObjectURL(url)
     ElMessage.success('下载成功')
-  } catch {
+  } catch (err) {
     // Error handled by interceptor
   }
 }
@@ -388,7 +393,7 @@ async function handleBatchUpload(file) {
     await batchUpdateItems(selectedSubtaskId.value, file)
     ElMessage.success('批量上传成功')
     fetchData()
-  } catch {
+  } catch (err) {
     // Error handled by interceptor
   }
   return false // Prevent default upload

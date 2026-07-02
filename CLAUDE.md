@@ -6,14 +6,18 @@
 
 ```
 techmg/
-├── CLAUDE.md              # 本文件 — 总纲
+├── CLAUDE.md              # 本文件 — 总纲（跨端全局约束 + 索引）
 ├── backend/               # Spring Boot 3.2.3 多模块 Maven
-│   └── CLAUDE.md          # 后端规约
+│   └── CLAUDE.md          # 后端规约（架构分层、API、测试、SQL 等）
 ├── vue-front/             # Vue 3.3.9 + Vite 5.0.4
-│   └── CLAUDE.md          # 前端规约
+│   └── CLAUDE.md          # 前端规约（编码规范、Element Plus、核心设计）
+├── techmgdb/              # 数据库变更 SQL（独立于后端代码）
+│   └── polardb/
+│       ├── README.md       # SQL 命名与版本管理规约
+│       ├── v1.0/{ddl,dml,rollback}/
+│       └── v2.0/{ddl,dml,rollback}/
 └── docs/
-    ├── requirements/       # 需求文档 (版本化)
-    │   └── v1.0.md         #   v1.0 需求文档
+    ├── requirements/       # 需求文档（版本化）
     └── superpowers/        # 设计文档 + 实施计划
 ```
 
@@ -24,14 +28,14 @@ techmg/
 | v1.0 | 2025-06 | 平台初版: RBAC + 菜单 + 技术治理占位 |
 | **v2.0** | **2026-06** | **登录改造 + ApiAccessLog 优化 + 技改任务管理** |
 
-## 技术栈 (精确版本)
+## 技术栈（精确版本）
 
 | 维度 | 选型 | 版本 |
 |------|------|------|
 | 后端 | Spring Boot / Spring | 3.2.3 / 6.1.4 |
 | JDK | Java 17 | Maven 多模块 |
 | ORM | MyBatis-Plus | 3.5.5 |
-| DB | PolarDB (MySQL 兼容) | tmvp |
+| DB | PolarDB (MySQL 兼容) | 标准版 |
 | 连接池 | Druid | 1.2.20 |
 | 缓存 | 已移除 (待行内 NOS) | — |
 | JSON | Gson | 2.10.1 |
@@ -52,46 +56,87 @@ techmg/
 设置           — 菜单管理 / 角色管理 / 用户管理 (仅平台管理员)
 ```
 
-## 数据库
+## 数据库连接
 
 - 库名: `tmvp` / 用户: `techmg` / 密码: `Tech@123++**`
-- **23 表** (9 系统表 + 10 业务表 + 4 v2 新表)
-- PolarDB: `47.99.179.180:33066`
-- utf8mb4 + Druid `connection-init-sqls`
+- PolarDB 标准版: `47.99.179.180:33066`
+- 字符集: utf8mb4 + Druid `connection-init-sqls`
+- 表结构详见 [backend/CLAUDE.md](backend/CLAUDE.md)
 
-## v2.0 新增表
+## 跨端全局约束
 
-| 表 | 说明 |
-|------|------|
-| `sys_user_branch` | 用户多机构关联 |
-| `tech_reform_task` | 技改父任务 |
-| `tech_reform_subtask` | 技改子任务 |
-| `tech_reform_item` | 治理清单条目 |
+> 仅包含同时约束前端和后端的规则。各端专属规约见对应 CLAUDE.md。
 
-## 全局约束
+| # | 约束 | 说明 |
+|----|------|------|
+| 1 | **配置格式** | 后端 `.yml`（禁止 `.properties`），前端 `.env.{environment}` |
+| 2 | **统一响应** | 所有 API → `R<T>` (code/message/data) |
+| 3 | **跨域** | 后端 CORS + Vite proxy |
+| 4 | **字符集** | MySQL 客户端 `--default-character-set=utf8mb4` |
+| 5 | **SQL 变更管理** | DDL/DML/Rollback 分离，按版本放入 `techmgdb/polardb/{version}/`，禁止嵌入后端代码 |
+| 6 | **测试覆盖率** | 业务代码行覆盖率 ≥ 90%（端各自实现：后端 JaCoCo + Sonar，前端 Vitest） |
 
-1. Java 17+ / 包名 `com.icbc.sh.techmg`
-2. 配置 `.yml` (禁止 `.properties`), 前端 `.env.{environment}`
-3. 所有 API → `R<T>` (code/message/data)
-4. MyBatis: 禁止 `@Select/@Update/@Insert/@Delete` 注解
-5. JSON: Gson, `extendMessageConverters` (保留 String 转换器)
-6. 日志: Log4j2 2.17.1, 排除 Logback
-7. **`@RequestParam` / `@PathVariable` 必须显式 `name`/`value`** (PolarDB 环境不支持 `-parameters`)
-8. MySQL: 客户端 `--default-character-set=utf8mb4`
-9. 跨模块通信: Spring Event 解耦 (参考 OperationLogEvent)
-10. 跨域: 后端 CORS + Vite proxy
-
-## 详细规约
+## 详细规约索引
 
 | 文档 | 内容 |
 |------|------|
-| [backend/CLAUDE.md](backend/CLAUDE.md) | 模块架构、57 API、框架组件、13 铁律、数据库 |
-| [vue-front/CLAUDE.md](vue-front/CLAUDE.md) | 页面清单、登录流程、路由守卫、布局设计、API层 |
+| [backend/CLAUDE.md](backend/CLAUDE.md) | 模块架构+企业级分层体系、57 API、框架组件、架构分层规约、17 条铁律、PolarDB SQL 规约、测试与代码质量、构建 |
+| [vue-front/CLAUDE.md](vue-front/CLAUDE.md) | 功能模块+页面清单、编码规约（10节+Element Plus专项）、核心设计、构建 |
+| [techmgdb/polardb/README.md](techmgdb/polardb/README.md) | SQL 命名规范、版本管理规则 |
 | [docs/superpowers/specs/2026-06-30-v2-design.md](docs/superpowers/specs/2026-06-30-v2-design.md) | v2.0 设计文档 |
 
-## 详细规约
+---
 
-| 文档 | 内容 |
-|------|------|
-| [backend/CLAUDE.md](backend/CLAUDE.md) | 模块架构、API清单、框架组件、12铁律、包结构、数据库 |
-| [vue-front/CLAUDE.md](vue-front/CLAUDE.md) | 页面清单、路由系统、布局设计、API层、构建命令 |
+## Git 协作与提交规约
+
+### Commit Message 格式（强制）
+
+提交信息必须符合以下格式：
+```
+<type>(<scope>): <subject>
+```
+- `feat`: 新功能
+- `fix`: Bug修复
+- `docs`: 文档修改
+- `refactor`: 重构（不改变功能）
+- `perf`: 性能优化
+- `test`: 测试用例
+- 示例：`feat(user): 增加用户积分过期自动扣减逻辑`
+
+### 分支策略
+
+- 新功能开发必须基于 `dev` 分支拉取 `feature/xxx` 分支，禁止直接在 `main` 或 `dev` 上开发
+- 修复 Bug 从 `dev` 拉取 `fix/xxx` 分支
+
+---
+
+## 配置与环境管理规约
+
+### 环境隔离（强制）
+
+- 配置文件必须拆分为 `application-dev.yml` / `application-test.yml` / `application-prod.yml`
+- 激活环境必须通过 `spring.profiles.active` 指定，禁止硬编码环境
+
+### 敏感配置（强制）
+
+- 数据库密码、密钥等禁止写在配置文件中，必须使用环境变量占位符 `${ENV_VAR}`
+- CI/CD 中通过环境变量注入真实值
+
+---
+
+## AI 交互元规约
+
+> 以下规则约束 AI 自身行为，确保生成代码的可用性。
+
+| # | 规则 | 说明 |
+|----|------|------|
+| 1 | **歧义澄清** | 需求模糊时，必须先向用户提问澄清，禁止擅自臆造业务逻辑 |
+| 2 | **变更影响分析** | 修改现有代码时，必须扫描引用点并提示影响范围 |
+| 3 | **拒绝过度设计** | 简单 CRUD 禁止引入 DDD/复杂设计模式，保持简单直接 |
+
+### AI 全局检查清单
+
+- [ ] Commit Message 是否符合 `feat/fix/docs` 格式？
+- [ ] 敏感密码是否使用 `${ENV}` 占位符而非硬编码？
+- [ ] 遇到模糊需求时，是否主动向用户确认而非自行猜测？
+- [ ] 修改代码前，是否扫描了所有引用点并评估了影响？

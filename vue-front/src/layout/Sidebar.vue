@@ -18,7 +18,7 @@
   </aside>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'

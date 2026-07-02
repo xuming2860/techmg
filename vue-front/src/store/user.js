@@ -11,10 +11,10 @@ function loadUserInfoFromStorage() {
   try {
     const info = decrypt(cached)
     if (info) return info
-  } catch {}
+  } catch (err) {}
   try {
     return JSON.parse(cached)
-  } catch {
+  } catch (err) {
     return null
   }
 }
@@ -111,7 +111,7 @@ export const useUserStore = defineStore('user', () => {
       if (tree && tree.length > 0) {
         setMenus(tree)
       }
-    } catch {
+    } catch (err) {
       // If API fails, routesLoaded stays false so we retry next navigation
       routesLoaded.value = false
     }

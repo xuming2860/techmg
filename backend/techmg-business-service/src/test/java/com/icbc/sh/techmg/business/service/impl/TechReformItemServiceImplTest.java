@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icbc.sh.techmg.business.entity.TechReformItem;
 import com.icbc.sh.techmg.business.mapper.TechReformItemMapper;
+import com.icbc.sh.techmg.business.vo.TechReformItemVO;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,7 +59,7 @@ public class TechReformItemServiceImplTest {
 
         doReturn(page).when(service).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        IPage<TechReformItem> result = service.pageItems(new Page<>(1, 10), 10L, null, null, null);
+        IPage<TechReformItemVO> result = service.pageItems(new Page<>(1, 10), 10L, null, null, null);
 
         assertNotNull(result);
         assertEquals(1, result.getTotal());
@@ -76,7 +77,7 @@ public class TechReformItemServiceImplTest {
 
         doReturn(page).when(service).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        IPage<TechReformItem> result = service.pageItems(new Page<>(1, 10), null, "MyApp", null, null);
+        IPage<TechReformItemVO> result = service.pageItems(new Page<>(1, 10), null, "MyApp", null, null);
 
         assertEquals(1, result.getTotal());
     }
@@ -92,7 +93,7 @@ public class TechReformItemServiceImplTest {
 
         doReturn(page).when(service).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        IPage<TechReformItem> result = service.pageItems(new Page<>(1, 10), null, null, "PENDING", null);
+        IPage<TechReformItemVO> result = service.pageItems(new Page<>(1, 10), null, null, "PENDING", null);
 
         assertEquals(1, result.getTotal());
     }
@@ -110,7 +111,7 @@ public class TechReformItemServiceImplTest {
 
         doReturn(page).when(service).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        IPage<TechReformItem> result = service.pageItems(
+        IPage<TechReformItemVO> result = service.pageItems(
                 new Page<>(1, 10), 10L, "AppX", "IN_PROGRESS", "MySQL");
 
         assertEquals(1, result.getTotal());
@@ -128,7 +129,7 @@ public class TechReformItemServiceImplTest {
 
         doReturn(page).when(service).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        IPage<TechReformItem> result = service.pageItems(new Page<>(1, 10), null, null, null, null);
+        IPage<TechReformItemVO> result = service.pageItems(new Page<>(1, 10), null, null, null, null);
 
         assertEquals(2, result.getTotal());
     }

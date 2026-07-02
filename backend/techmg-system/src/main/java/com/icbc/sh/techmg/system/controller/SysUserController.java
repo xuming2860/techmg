@@ -1,18 +1,19 @@
 package com.icbc.sh.techmg.system.controller;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.icbc.sh.techmg.common.constant.ResultCode;
 import com.icbc.sh.techmg.common.exception.BusinessException;
 import com.icbc.sh.techmg.common.model.R;
+import com.icbc.sh.techmg.common.util.PageResult;
 import com.icbc.sh.techmg.framework.log.ApiAccessLog;
-import com.icbc.sh.techmg.system.entity.SysRole;
 import com.icbc.sh.techmg.system.entity.SysUser;
-import com.icbc.sh.techmg.system.model.dto.UserCreateDTO;
-import com.icbc.sh.techmg.system.model.dto.UserQueryDTO;
-import com.icbc.sh.techmg.system.model.dto.UserRoleDTO;
-import com.icbc.sh.techmg.system.model.dto.UserUpdateDTO;
+import com.icbc.sh.techmg.system.dto.SysUserCreateDTO;
+import com.icbc.sh.techmg.system.dto.SysUserQueryDTO;
+import com.icbc.sh.techmg.system.dto.SysUserRoleDTO;
+import com.icbc.sh.techmg.system.dto.SysUserUpdateDTO;
 import com.icbc.sh.techmg.system.service.SysRoleService;
 import com.icbc.sh.techmg.system.service.SysUserService;
+import com.icbc.sh.techmg.system.vo.SysRoleVO;
+import com.icbc.sh.techmg.system.vo.SysUserVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -32,10 +33,10 @@ public class SysUserController {
 
     @Operation(summary = "分页查询用户列表")
     @GetMapping("/list")
-    public R<IPage<SysUser>> list(@RequestParam(name = "page", defaultValue = "1") Integer page,
+    public R<PageResult<SysUserVO>> list(@RequestParam(name = "page", defaultValue = "1") Integer page,
                                    @RequestParam(name = "size", defaultValue = "10") Integer size,
                                    @RequestParam(name = "keyword", required = false) String keyword) {
-        UserQueryDTO dto = new UserQueryDTO();
+        SysUserQueryDTO dto = new SysUserQueryDTO();
         dto.setPage(page);
         dto.setSize(size);
         dto.setKeyword(keyword);
@@ -55,7 +56,7 @@ public class SysUserController {
     @Operation(summary = "新增用户")
     @ApiAccessLog
     @PostMapping
-    public R<SysUser> create(@Valid @RequestBody UserCreateDTO dto) {
+    public R<SysUser> create(@Valid @RequestBody SysUserCreateDTO dto) {
         SysUser user = new SysUser();
         user.setAuthNo(dto.getAuthNo());
         user.setUsername(dto.getUsername());
@@ -71,7 +72,7 @@ public class SysUserController {
     @Operation(summary = "更新用户")
     @ApiAccessLog
     @PutMapping
-    public R<SysUser> update(@Valid @RequestBody UserUpdateDTO dto) {
+    public R<SysUser> update(@Valid @RequestBody SysUserUpdateDTO dto) {
         SysUser user = sysUserService.getById(dto.getId());
         if (user == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "用户不存在");
@@ -100,7 +101,7 @@ public class SysUserController {
     @Operation(summary = "分配用户角色")
     @ApiAccessLog
     @PostMapping("/{userId}/roles")
-    public R<Void> assignRoles(@PathVariable("userId") Long userId, @RequestBody UserRoleDTO dto) {
+    public R<Void> assignRoles(@PathVariable("userId") Long userId, @RequestBody SysUserRoleDTO dto) {
         SysUser user = sysUserService.getById(userId);
         if (user == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "用户不存在");
@@ -111,7 +112,7 @@ public class SysUserController {
 
     @Operation(summary = "获取用户角色")
     @GetMapping("/{userId}/roles")
-    public R<List<SysRole>> getUserRoles(@PathVariable("userId") Long userId) {
+    public R<List<SysRoleVO>> getUserRoles(@PathVariable("userId") Long userId) {
         return R.ok(sysRoleService.getRolesByUserId(userId));
     }
 }

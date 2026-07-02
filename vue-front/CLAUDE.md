@@ -93,6 +93,341 @@ vue-front/src/
 └── styles/index.scss             # CSS reset + 主题变量 + 滚动条
 ```
 
+## 编码规约（强制约束）
+
+### 1. 架构范式与 API 风格（核心红线）
+
+- **强制 `<script setup lang="ts">`**：所有 `.vue` 组件必须使用组合式 API + TypeScript，严禁 Options API（`export default { data(), methods: {} }`）
+- **逻辑抽离**：可复用逻辑抽取为 Composables，置于 `composables/` 目录，`use` 前缀命名（如 `useUserAuth`）
+- **组件行数限制**：组件内部业务逻辑不超过 200 行，复杂逻辑下沉至 Composables 或 `utils/`
+- **TypeScript 强制**：所有 `.vue`、`.ts` 文件必须使用 TypeScript（`lang="ts"`），严禁纯 JavaScript
+
+### 2. 目录结构与模块化
+
+```
+src/
+├── api/                # API 接口定义（按模块划分）
+│   ├── request.ts      # 统一 Axios 封装（拦截器、baseURL）
+│   └── types/          # API 请求/响应的 TS 类型定义
+├── assets/             # 静态资源（图片、字体、全局样式）
+├── components/         # 公共通用组件
+│   └── common/
+├── composables/        # 组合式函数（useTable, usePagination, useAuth）
+├── layouts/            # 布局组件（DefaultLayout, TopOnlyLayout）
+├── router/             # 路由配置
+├── stores/             # Pinia 状态管理（按模块划分）
+├── types/              # 全局 TypeScript 类型定义（*.d.ts）
+├── utils/              # 工具函数（格式化、校验、常量、storage）
+└── views/              # 页面级组件（按业务模块划分）
+    └── user/
+        ├── UserList.vue
+        ├── UserDetail.vue
+        └── components/ # 页面内部私有组件
+```
+
+### 3. 组件编码与命名规范
+
+| 维度 | 规范 | 示例 |
+|------|------|------|
+| 文件名 | PascalCase | `UserProfile.vue` |
+| 模板引用 | PascalCase 或 kebab-case（保持一致） | `<UserProfile />` 或 `<user-profile />` |
+| Props | TypeScript 泛型 + `withDefaults` | 见下方代码 |
+| Emits | TypeScript 泛型声明 | 见下方代码 |
+| 私有组件 | 页面目录下 `components/`，禁止放入全局 `components/` | `views/user/components/UserForm.vue` |
+
+```vue
+<script setup lang="ts">
+interface Props {
+  title: string;
+  count?: number;
+  data: UserInfo;
+}
+const props = withDefaults(defineProps<Props>(), {
+  count: 0
+});
+
+const emit = defineEmits<{
+  (e: 'update', value: string): void;
+  (e: 'delete', id: number): void;
+}>();
+</script>
+```
+
+### 4. 状态管理（Pinia）规约
+
+- **Setup Store 语法**：必须使用 `defineStore` + setup 函数风格，禁止 Options Store
+
+```typescript
+// stores/user.ts
+export const useUserStore = defineStore('user', () => {
+  const userInfo = ref<UserInfo | null>(null);
+  const isLoggedIn = computed(() => !!userInfo.value);
+
+  async function login(credentials: LoginParams) {
+    // ...
+  }
+
+  return { userInfo, isLoggedIn, login };
+});
+```
+
+- **解构约束**：响应式属性（state/getters）必须用 `storeToRefs` 解构，actions 可直接解构
+
+```typescript
+import { storeToRefs } from 'pinia';
+const userStore = useUserStore();
+const { userInfo, isLoggedIn } = storeToRefs(userStore); // 保持响应式
+const { login } = userStore; // action 直接解构
+```
+
+- **持久化封装**：localStorage/sessionStorage 操作统一封装至 `utils/storage.ts`，禁止 Store 中直接操作原生 API
+
+### 5. 路由管理（Vue Router）规约
+
+- **命名路由强制**：跳转必须使用 `{ name: 'UserDetail', params: { id: 1 } }`，严禁硬编码字符串路径 `'/user/1'`
+- **守卫抽离**：全局 `beforeEach` 置于 `router/index.ts`，业务权限校验逻辑抽离至 `composables/useAuth.ts`，禁止在守卫文件中编写大量业务逻辑
+- **路由懒加载**：所有页面级组件必须使用动态导入 `() => import()`
+
+### 6. 网络请求（Axios）封装规约
+
+- **统一入口**：所有 HTTP 请求必须通过 `api/request.ts` 的 Axios 实例，严禁原生 `fetch` 或未封装第三方库
+- **拦截器职责**：
+  - 请求拦截器：统一添加 Token、请求时间戳
+  - 响应拦截器：统一处理 401（登录态过期）、错误码提示
+- **API 分层**：每个业务模块独立文件（如 `api/user.ts`），函数命名清晰（`getUserList`、`updateUser`），含完整 TS 类型（入参 Params、出参 Response）
+- **Loading 防抖**：涉及提交/查询的请求，配合 `loading` 响应式状态控制重复提交
+
+### 7. 样式（CSS）约束
+
+- **样式隔离**：所有组件样式必须 `scoped`，严禁全局样式污染
+- **深度选择器**：修改 Element Plus 等第三方组件内部样式，必须用 `:deep()`，禁止已弃用的 `::v-deep`
+- **全局变量**：主题色/字体/间距定义在 `assets/styles/variables.scss`，通过 `v-bind` 或 `@use` 引入，禁止硬编码颜色值（如 `#FF0000`）
+- **布局优先**：优先 Flexbox / Grid，禁止滥用 `!important`
+
+### 8. 性能优化强制项
+
+| 场景 | 规范 |
+|------|------|
+| 非首屏大组件 | `defineAsyncComponent` 异步加载（弹窗、抽屉、富文本编辑器） |
+| `v-for` 列表 | 绑定稳定唯一 `key`（优先 `id`，**严禁 `index`**） |
+| 大数据对象 | 使用 `shallowRef` / `markRaw` 避免深度响应式开销 |
+| 组件卸载 | `onBeforeUnmount` 中清除事件监听、定时器、WebSocket |
+
+### 9. 错误处理与日志
+
+- **全局捕获**：`main.ts` 中挂载 `app.config.errorHandler` 统一捕获 Vue 异常
+- **API 异常**：`try-catch` 捕获后 `console.error` 输出详情 + 用户友好 Toast 提示
+- **禁止空 catch**：严禁 `catch {}` 空块，必须记录错误或重新抛出
+
+### AI 代码生成强制检查清单
+
+在输出 Vue 3 代码之前，必须逐项校验：
+
+1. ✅ 组件是否使用 `<script setup lang="ts">` 而非 Options API？
+2. ✅ 复杂逻辑是否抽离至 composables 或 utils，组件代码是否控制在 200 行内？
+3. ✅ Props 和 Emits 是否拥有完整的 TypeScript 类型定义？
+4. ✅ 路由跳转是否使用了 `name` 而非硬编码字符串路径？
+5. ✅ API 请求是否经过 `request.ts` 统一封装，并带有完整的类型声明？
+6. ✅ 所有 `v-for` 是否绑定了稳定且唯一的 `key`？
+7. ✅ 样式是否添加了 `scoped`，且没有 `!important` 滥用？
+8. ✅ 是否处理了组件销毁前的内存清理（事件/定时器/WebSocket）？
+
+### 安全防御（强制）
+
+- **XSS 防护**：严禁使用 `v-html` 直接渲染用户输入内容。如需渲染 HTML，必须经过 DOMPurify 净化
+- **输入校验**：所有用户输入表单必须配合 `el-form` 的 `rules` 校验，禁止裸提交
+
+### 前端 AI 检查清单
+
+- [ ] 是否存在 `v-html` 渲染用户输入？
+- [ ] 是否存在 `System.out` / `console.log` 遗留调试代码（`console.error` 允许）？
+
+### 10. Element Plus 专项规约
+
+> **前置依赖**：本规约建立在 Vue 3 + TypeScript 基础约束之上，AI 生成代码时必须同时遵守。
+
+#### 10.1 组件引入与注册（核心红线）
+
+- **按需自动导入（强制）**：项目必须配置 `unplugin-vue-components` + `unplugin-auto-import` 实现按需导入，**禁止**手动 `import { ElButton } from 'element-plus'`
+- **完整引入禁止**：严禁 `app.use(ElementPlus)` 完整引入
+- **Volar 类型**：`tsconfig.json` 的 `compilerOptions.types` 中添加 `"element-plus/global"`
+
+#### 10.2 表单（Form）组件规约
+
+| 规则 | 说明 |
+|------|------|
+| 结构 | 必须 `<el-form>` + `<el-form-item>` 容器 |
+| 数据绑定 | `model` 绑定响应式对象 |
+| 验证规则 | `rules` 属性传入，`prop` 对应字段名，必填项 `required: true`，明确 `trigger` |
+| 数字输入 | 使用 `v-model.number` 修饰符 |
+| 提交 | `@submit.prevent` 阻止默认提交 |
+| 校验 | `formRef.value?.validate()` 通过后方可提交 |
+
+```vue
+<template>
+  <el-form
+    ref="formRef"
+    :model="formData"
+    :rules="formRules"
+    label-width="120px"
+    @submit.prevent="handleSubmit"
+  >
+    <el-form-item label="用户名" prop="username">
+      <el-input v-model="formData.username" />
+    </el-form-item>
+    <el-form-item>
+      <el-button type="primary" native-type="submit">提交</el-button>
+    </el-form-item>
+  </el-form>
+</template>
+
+<script setup lang="ts">
+import { reactive, ref } from 'vue';
+import type { FormInstance, FormRules } from 'element-plus';
+
+const formRef = ref<FormInstance>();
+const formData = reactive({ username: '' });
+const formRules: FormRules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' }
+  ]
+};
+
+const handleSubmit = async () => {
+  await formRef.value?.validate();
+  // 提交逻辑
+};
+</script>
+```
+
+#### 10.3 表格（Table）组件规约
+
+| 规则 | 说明 |
+|------|------|
+| 样式 | 必须 `border` + `stripe`（数据量大时） |
+| 溢出 | 长内容必须 `show-overflow-tooltip` |
+| 固定 | 纵向多 → `height`/`max-height` 固定表头；横向多 → 操作列 `fixed="right"` |
+| 序号 | `type="index"` |
+| 自定义列 | `<template #default="scope">` 插槽，通过 `scope.row` 访问行数据 |
+| 分页 | 超过 10 条必须配合 `<el-pagination>`，禁止一次性渲染全部 |
+
+```vue
+<template>
+  <el-table :data="tableData" border stripe height="400">
+    <el-table-column type="index" label="序号" width="60" />
+    <el-table-column prop="name" label="姓名" show-overflow-tooltip />
+    <el-table-column prop="status" label="状态">
+      <template #default="scope">
+        <el-tag :type="scope.row.status === 'active' ? 'success' : 'danger'">
+          {{ scope.row.status }}
+        </el-tag>
+      </template>
+    </el-table-column>
+    <el-table-column label="操作" width="150" fixed="right">
+      <template #default="scope">
+        <el-button type="primary" link @click="handleEdit(scope.row)">编辑</el-button>
+      </template>
+    </el-table-column>
+  </el-table>
+</template>
+```
+
+#### 10.4 反馈组件规约
+
+**Message 消息提示**：
+- 从 `element-plus` 导入 `ElMessage`
+- 优先类型化方法：`ElMessage.success()` / `.error()` / `.warning()` / `.info()`
+- `duration` 合理值（默认 3000ms），禁止设为 0
+- **严禁** `dangerouslyUseHTMLString: true` + 用户输入（防 XSS）
+- 位置统一默认（顶部居中），禁止单次调用随意修改 `placement`
+
+**MessageBox 消息弹框**：
+- 从 `element-plus` 导入 `ElMessageBox`
+- 删除/提交等关键操作必须 `ElMessageBox.confirm()` 二次确认
+- 必须 `.catch()` 捕获取消操作，禁止空 catch
+
+```typescript
+import { ElMessageBox, ElMessage } from 'element-plus';
+
+const handleDelete = async (id: number) => {
+  try {
+    await ElMessageBox.confirm('确定要删除该条记录吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning'
+    });
+    // 执行删除逻辑
+    ElMessage.success('删除成功');
+  } catch {
+    // 用户取消
+  }
+};
+```
+
+#### 10.5 图标（Icon）使用规约
+
+- 安装 `@element-plus/icons-vue`
+- `main.ts` 中全局注册所有图标
+- 必须包裹在 `<el-icon>` 中使用
+- 命名 PascalCase：`<Edit />`、`<Search />`、`<Delete />`
+
+```typescript
+// main.ts — 全局注册
+import * as ElementPlusIconsVue from '@element-plus/icons-vue';
+for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+  app.component(key, component);
+}
+```
+
+```vue
+<el-button type="primary">
+  <el-icon><Search /></el-icon>
+  搜索
+</el-button>
+```
+
+#### 10.6 全局配置规约
+
+```typescript
+// main.ts
+app.use(ElementPlus, {
+  size: 'default',   // 统一尺寸，禁止单组件重复设置
+  zIndex: 3000       // 统一层级
+});
+```
+
+#### 10.7 性能优化强制项
+
+| 场景 | 规范 |
+|------|------|
+| 表格 >1000 条 | 虚拟滚动（`el-table-v2`）或后端分页，禁止一次性渲染 |
+| 弹窗/抽屉 | `v-if` 控制渲染时机，禁止 `v-show` 或始终渲染 |
+| `el-select` >100 项 | 开启 `filterable` + `remote` 远程搜索，禁止一次性加载 |
+
+#### 10.8 TypeScript 类型支持
+
+- 组件实例必须导入对应类型：`FormInstance`、`FormRules`、`TableInstance`
+- 禁止使用 `any` 作为 Element Plus 组件 Props 类型
+
+```typescript
+import type { FormInstance, FormRules, TableInstance } from 'element-plus';
+const formRef = ref<FormInstance>();
+const tableRef = ref<TableInstance>();
+```
+
+#### Element Plus 专项检查清单
+
+- [ ] 是否配置了按需自动导入，而非完整引入或手动导入？
+- [ ] 表单是否包含 `<el-form>` + `<el-form-item>` 结构，并配置了 `rules` 和 `prop`？
+- [ ] 表格是否设置了 `border`、`stripe`，长内容是否使用了 `show-overflow-tooltip`？
+- [ ] 消息提示是否使用了 `ElMessage.type()` 方法，而非 `ElMessage({ type })`？
+- [ ] 图标是否包裹在 `<el-icon>` 中，且已在 `main.ts` 中全局注册？
+- [ ] 删除等危险操作是否使用了 `ElMessageBox.confirm()` 二次确认？
+- [ ] 是否从 `element-plus` 导入了必要的 TypeScript 类型（如 `FormInstance`）？
+
+---
+
 ## 核心设计
 
 ### 登录流程 (v2.0)

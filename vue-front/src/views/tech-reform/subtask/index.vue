@@ -84,8 +84,8 @@
               <template #default="{ row }">
                 <template v-if="row.dbTypes && row.dbTypes.length">
                   <el-tag
-                    v-for="(t, i) in row.dbTypes"
-                    :key="i"
+                    v-for="t in row.dbTypes"
+                    :key="t"
                     size="small"
                     style="margin-right: 4px; margin-bottom: 2px"
                   >
@@ -106,8 +106,8 @@
               <template #default="{ row }">
                 <template v-if="row.departments && row.departments.length">
                   <el-tag
-                    v-for="(d, i) in row.departments.slice(0, 2)"
-                    :key="i"
+                    v-for="d in row.departments.slice(0, 2)"
+                    :key="d"
                     size="small"
                     style="margin-right: 4px; margin-bottom: 2px"
                   >
@@ -237,8 +237,8 @@
   </div>
 </template>
 
-<script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+<script setup lang="ts">
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
@@ -368,7 +368,7 @@ function searchParentTasks(keyword) {
       if (keyword) params.keyword = keyword
       const res = await pageTasks(params)
       parentTaskOptions.value = (res && res.records) ? res.records : []
-    } catch {
+    } catch (err) {
       parentTaskOptions.value = []
     } finally {
       parentTaskLoading.value = false
@@ -380,7 +380,7 @@ function searchParentTasks(keyword) {
 async function fetchSubtasks() {
   loading.value = true
   try {
-    const params = {
+    const params: Record<string, any> = {
       page: queryForm.page,
       size: queryForm.size
     }
@@ -393,11 +393,11 @@ async function fetchSubtasks() {
     // Parse JSON string fields from backend into arrays for display
     records.forEach((r) => {
       if (typeof r.departments === 'string') {
-        try { r.departments = JSON.parse(r.departments) } catch { r.departments = [] }
+        try { r.departments = JSON.parse(r.departments) } catch (err) { r.departments = [] }
       }
       if (!Array.isArray(r.departments)) r.departments = []
       if (typeof r.dbTypes === 'string') {
-        try { r.dbTypes = JSON.parse(r.dbTypes) } catch { r.dbTypes = [] }
+        try { r.dbTypes = JSON.parse(r.dbTypes) } catch (err) { r.dbTypes = [] }
       }
       if (!Array.isArray(r.dbTypes)) r.dbTypes = []
     })
@@ -518,7 +518,7 @@ onMounted(async () => {
   try {
     const types = await getDictByType('subtask_db_type').catch(() => [])
     dbTypeOptions.value = Array.isArray(types) ? types : []
-  } catch {
+  } catch (err) {
     // Non-fatal
   }
 
@@ -530,7 +530,7 @@ onMounted(async () => {
       if (res && res.records) {
         parentTaskOptions.value = res.records
       }
-    } catch {
+    } catch (err) {
       // Non-fatal
     }
   }
@@ -541,6 +541,10 @@ onMounted(async () => {
   }
 
   fetchSubtasks()
+})
+
+onBeforeUnmount(() => {
+  if (searchTimer) clearTimeout(searchTimer)
 })
 </script>
 

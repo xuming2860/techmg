@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.icbc.sh.techmg.common.util.PageResult;
 import com.icbc.sh.techmg.system.entity.SysRole;
 import com.icbc.sh.techmg.system.entity.SysUser;
 import com.icbc.sh.techmg.system.entity.SysUserBranch;
@@ -13,15 +14,21 @@ import com.icbc.sh.techmg.system.mapper.SysUserBranchMapper;
 import com.icbc.sh.techmg.system.mapper.SysUserMapper;
 import com.icbc.sh.techmg.system.mapper.SysUserRoleMapper;
 import com.icbc.sh.techmg.system.mapper.SysRoleMapper;
-import com.icbc.sh.techmg.system.model.dto.UserQueryDTO;
+import com.icbc.sh.techmg.system.dto.SysUserQueryDTO;
 import com.icbc.sh.techmg.system.service.SysUserService;
+import com.icbc.sh.techmg.system.vo.SysRoleVO;
+import com.icbc.sh.techmg.system.vo.SysUserVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements SysUserService {
@@ -40,12 +47,13 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     @DS("slave")
-    public IPage<SysUser> pageUsers(UserQueryDTO dto) {
+    public PageResult<SysUserVO> pageUsers(SysUserQueryDTO dto) {
         Page<SysUser> page = new Page<>(
                 dto.getPage() != null ? dto.getPage() : 1,
                 dto.getSize() != null ? dto.getSize() : 10
         );
-        return this.baseMapper.selectUserPage(page, dto);
+        IPage<SysUser> result = this.baseMapper.selectUserPage(page, dto);
+        return PageResult.from(result, this::toVO);
     }
 
     @Override
@@ -123,7 +131,19 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     }
 
     @Override
-    public List<SysRole> getRoles(Long userId) {
-        return sysUserRoleMapper.selectRolesByUserId(userId);
+    public List<SysRoleVO> getRoles(Long userId) {
+        return sysUserRoleMapper.selectRolesByUserId(userId).stream()
+                .map(role -> {
+                    SysRoleVO vo = new SysRoleVO();
+                    BeanUtils.copyProperties(role, vo);
+                    return vo;
+                })
+                .collect(Collectors.toList());
+    }
+
+    private SysUserVO toVO(SysUser entity) {
+        SysUserVO vo = new SysUserVO();
+        BeanUtils.copyProperties(entity, vo);
+        return vo;
     }
 }

@@ -39,7 +39,7 @@
   </header>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed } from 'vue'
 import { useUserStore } from '@/store/user'
 import { useRoute } from 'vue-router'

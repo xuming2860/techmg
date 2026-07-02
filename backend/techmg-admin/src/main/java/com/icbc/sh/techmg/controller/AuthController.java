@@ -8,7 +8,6 @@ import com.icbc.sh.techmg.framework.security.JwtTokenProvider;
 import com.icbc.sh.techmg.framework.security.SsoAuthProvider;
 import com.icbc.sh.techmg.system.entity.SysUser;
 import com.icbc.sh.techmg.system.service.SysUserService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,16 +25,25 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider jwtTokenProvider;
     private final SysUserService sysUserService;
     private final LoginMockProperties loginMockProperties;
+    private final SsoAuthProvider ssoAuthProvider; // null if SSO not configured
 
-    @Autowired(required = false)
-    private SsoAuthProvider ssoAuthProvider;
+    public AuthController(AuthenticationManager authenticationManager,
+                          JwtTokenProvider jwtTokenProvider,
+                          SysUserService sysUserService,
+                          LoginMockProperties loginMockProperties,
+                          @Autowired(required = false) SsoAuthProvider ssoAuthProvider) {
+        this.authenticationManager = authenticationManager;
+        this.jwtTokenProvider = jwtTokenProvider;
+        this.sysUserService = sysUserService;
+        this.loginMockProperties = loginMockProperties;
+        this.ssoAuthProvider = ssoAuthProvider;
+    }
 
     /**
      * 登录 — 支持 SSO 模式和 Mock 模式。
@@ -206,13 +214,24 @@ public class AuthController {
             return R.fail(401, "未登录");
         }
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String authNo = userDetails.getUsername();
-        SysUser sysUser = sysUserService.getByAuthNo(authNo);
+        // principal may be String (JWT) or UserDetails
+        Object principal = authentication.getPrincipal();
+        String authNo;
+        List<String> roles;
+        if (principal instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails) principal;
+            authNo = userDetails.getUsername();
+            roles = userDetails.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+        } else {
+            authNo = principal.toString();
+            roles = authentication.getAuthorities().stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toList());
+        }
 
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+        SysUser sysUser = sysUserService.getByAuthNo(authNo);
 
         Map<String, Object> userInfo = new LinkedHashMap<>();
         userInfo.put("authNo", authNo);

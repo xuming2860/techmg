@@ -145,18 +145,25 @@
   </el-dialog>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, computed, watch, nextTick } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UploadFilled } from '@element-plus/icons-vue'
 import { importItems } from '@/api/tech-reform'
 
-const props = defineProps({
-  visible: { type: Boolean, default: false },
-  subtaskId: { type: [String, Number], default: null }
+interface Props {
+  visible?: boolean
+  subtaskId?: string | number | null
+}
+const props = withDefaults(defineProps<Props>(), {
+  visible: false,
+  subtaskId: null
 })
 
-const emit = defineEmits(['update:visible', 'imported'])
+const emit = defineEmits<{
+  (e: 'update:visible', value: boolean): void
+  (e: 'imported'): void
+}>()
 
 // Step state
 const activeStep = ref(0)
@@ -348,7 +355,7 @@ async function confirmImport() {
     ElMessage.success('导入成功')
     emit('update:visible', false)
     emit('imported')
-  } catch {
+  } catch (err) {
     // Error handled by request interceptor
   } finally {
     importing.value = false

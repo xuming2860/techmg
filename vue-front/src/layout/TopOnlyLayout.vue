@@ -7,7 +7,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import TopBar from './TopBar.vue'
 </script>
 

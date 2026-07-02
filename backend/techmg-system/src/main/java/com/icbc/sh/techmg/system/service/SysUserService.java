@@ -2,16 +2,18 @@ package com.icbc.sh.techmg.system.service;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.icbc.sh.techmg.system.entity.SysRole;
+import com.icbc.sh.techmg.common.util.PageResult;
 import com.icbc.sh.techmg.system.entity.SysUser;
-import com.icbc.sh.techmg.system.model.dto.UserQueryDTO;
+import com.icbc.sh.techmg.system.dto.SysUserQueryDTO;
+import com.icbc.sh.techmg.system.vo.SysRoleVO;
+import com.icbc.sh.techmg.system.vo.SysUserVO;
 
 import java.util.List;
 import java.util.Map;
 
 public interface SysUserService extends IService<SysUser> {
     SysUser getByAuthNo(String authNo);
-    IPage<SysUser> pageUsers(UserQueryDTO dto);
+    PageResult<SysUserVO> pageUsers(SysUserQueryDTO dto);
     void assignRoles(Long userId, List<Long> roleIds);
 
     /**
@@ -25,5 +27,5 @@ public interface SysUserService extends IService<SysUser> {
     /**
      * Get roles assigned to a user.
      */
-    List<SysRole> getRoles(Long userId);
+    List<SysRoleVO> getRoles(Long userId);
 }

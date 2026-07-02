@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icbc.sh.techmg.business.entity.TechReformSubtask;
 import com.icbc.sh.techmg.business.mapper.TechReformSubtaskMapper;
+import com.icbc.sh.techmg.business.vo.TechReformSubtaskVO;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,7 +58,7 @@ public class TechReformSubtaskServiceImplTest {
 
         doReturn(page).when(service).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        IPage<TechReformSubtask> result = service.pageSubtasks(new Page<>(1, 10), 100L, null, null);
+        IPage<TechReformSubtaskVO> result = service.pageSubtasks(new Page<>(1, 10), 100L, null, null);
 
         assertNotNull(result);
         assertEquals(1, result.getTotal());
@@ -75,7 +76,7 @@ public class TechReformSubtaskServiceImplTest {
 
         doReturn(page).when(service).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        IPage<TechReformSubtask> result = service.pageSubtasks(new Page<>(1, 10), null, "IN_PROGRESS", null);
+        IPage<TechReformSubtaskVO> result = service.pageSubtasks(new Page<>(1, 10), null, "IN_PROGRESS", null);
 
         assertEquals(1, result.getTotal());
     }
@@ -91,7 +92,7 @@ public class TechReformSubtaskServiceImplTest {
 
         doReturn(page).when(service).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        IPage<TechReformSubtask> result = service.pageSubtasks(new Page<>(1, 10), null, null, "Redis");
+        IPage<TechReformSubtaskVO> result = service.pageSubtasks(new Page<>(1, 10), null, null, "Redis");
 
         assertEquals(1, result.getTotal());
         assertEquals("Redis集群升级", result.getRecords().get(0).getSubtaskName());
@@ -109,7 +110,7 @@ public class TechReformSubtaskServiceImplTest {
 
         doReturn(page).when(service).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        IPage<TechReformSubtask> result = service.pageSubtasks(new Page<>(1, 10), null, null, null);
+        IPage<TechReformSubtaskVO> result = service.pageSubtasks(new Page<>(1, 10), null, null, null);
 
         assertEquals(2, result.getTotal());
     }
@@ -130,8 +131,8 @@ public class TechReformSubtaskServiceImplTest {
         verify(service).updateById(any(TechReformSubtask.class));
     }
 
-    @Test
-    public void shouldNotUpdateStatusWhenSubtaskNotFound() {
+    @Test(expected = com.icbc.sh.techmg.common.exception.BusinessException.class)
+    public void shouldThrowWhenUpdateStatusSubtaskNotFound() {
         doReturn(null).when(service).getById(999L);
 
         service.updateStatus(999L, "COMPLETED");

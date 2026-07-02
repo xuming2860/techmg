@@ -16,6 +16,17 @@
   </template>
 </template>
 
-<script setup>
-defineProps({ menu: { type: Object, required: true } })
+<script setup lang="ts">
+interface MenuItemData {
+  id: number
+  menuName: string
+  type: number
+  icon?: string
+  path?: string
+  children?: MenuItemData[]
+}
+interface Props {
+  menu: MenuItemData
+}
+defineProps<Props>()
 </script>

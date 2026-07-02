@@ -15,6 +15,11 @@
     <dependencies>
         <dependency>
             <groupId>com.icbc.sh</groupId>
+            <artifactId>techmg-framework</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.icbc.sh</groupId>
             <artifactId>techmg-system</artifactId>
             <version>${project.version}</version>
         </dependency>

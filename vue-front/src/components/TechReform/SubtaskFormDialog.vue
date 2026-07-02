@@ -135,21 +135,31 @@
   </el-dialog>
 </template>
 
-<script setup>
-import { ref, reactive, computed, watch } from 'vue'
+<script setup lang="ts">
+import { ref, reactive, computed, watch, onBeforeUnmount } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createSubtask, updateSubtask, pageTasks, getDictByType } from '@/api/tech-reform'
 import { getDeptTree } from '@/api/system/dept'
 import { useUserStore } from '@/store/user'
 
-const props = defineProps({
-  visible: { type: Boolean, default: false },
-  subtask: { type: Object, default: null },
-  defaultParentTaskId: { type: [String, Number], default: null },
-  defaultParentTaskName: { type: String, default: '' }
+interface Props {
+  visible?: boolean
+  subtask?: Record<string, any> | null
+  defaultParentTaskId?: string | number | null
+  defaultParentTaskName?: string
+}
+const props = withDefaults(defineProps<Props>(), {
+  visible: false,
+  subtask: null,
+  defaultParentTaskId: null,
+  defaultParentTaskName: ''
 })
 
-const emit = defineEmits(['update:visible', 'saved', 'needImport'])
+const emit = defineEmits<{
+  (e: 'update:visible', value: boolean): void
+  (e: 'saved'): void
+  (e: 'needImport', subtaskId: string | number): void
+}>()
 
 const userStore = useUserStore()
 
@@ -217,7 +227,7 @@ function safeParseArray(value) {
     try {
       const parsed = JSON.parse(value)
       return Array.isArray(parsed) ? parsed : []
-    } catch {
+    } catch (err) {
       return []
     }
   }
@@ -245,7 +255,7 @@ async function loadOptions() {
     dbTypeOptions.value = Array.isArray(dbTypes) ? dbTypes : []
     const tree = Array.isArray(deptTree) ? deptTree : []
     deptOptions.value = flattenDeptTree(tree)
-  } catch {
+  } catch (err) {
     // Non-fatal
   }
 }
@@ -259,11 +269,11 @@ async function searchParentTasks(keyword) {
   searchTimer = setTimeout(async () => {
     parentTaskLoading.value = true
     try {
-      const params = { page: 1, size: 20 }
+      const params: Record<string, any> = { page: 1, size: 20 }
       if (keyword) params.keyword = keyword
       const res = await pageTasks(params)
       parentTaskOptions.value = (res && res.records) ? res.records : []
-    } catch {
+    } catch (err) {
       parentTaskOptions.value = []
     } finally {
       parentTaskLoading.value = false
@@ -316,7 +326,7 @@ watch(
               selectedParentTask.value = found
               parentTaskOptions.value = [found]
             }
-          } catch {
+          } catch (err) {
             // Non-fatal
           }
         }
@@ -351,7 +361,7 @@ watch(
               form.startDate = found.startDate || ''
               form.endDate = found.endDate || ''
             }
-          } catch {
+          } catch (err) {
             // Non-fatal
           }
         }
@@ -412,4 +422,8 @@ async function handleSubmit() {
     submitting.value = false
   }
 }
+
+onBeforeUnmount(() => {
+  if (searchTimer) clearTimeout(searchTimer)
+})
 </script>

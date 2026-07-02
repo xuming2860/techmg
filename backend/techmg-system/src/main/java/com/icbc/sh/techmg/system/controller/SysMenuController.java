@@ -1,14 +1,13 @@
 package com.icbc.sh.techmg.system.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.icbc.sh.techmg.common.constant.ResultCode;
-import com.icbc.sh.techmg.common.exception.BusinessException;
 import com.icbc.sh.techmg.common.model.R;
 import com.icbc.sh.techmg.framework.log.ApiAccessLog;
-import com.icbc.sh.techmg.system.entity.SysMenu;
+import com.icbc.sh.techmg.system.dto.SysMenuCreateDTO;
+import com.icbc.sh.techmg.system.dto.SysMenuUpdateDTO;
 import com.icbc.sh.techmg.system.entity.SysUser;
 import com.icbc.sh.techmg.system.service.SysMenuService;
 import com.icbc.sh.techmg.system.service.SysUserService;
+import com.icbc.sh.techmg.system.vo.SysMenuVO;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -31,13 +30,13 @@ public class SysMenuController {
 
     @Operation(summary = "获取菜单树")
     @GetMapping("/tree")
-    public R<List<SysMenu>> tree() {
+    public R<List<SysMenuVO>> tree() {
         return R.ok(sysMenuService.getMenuTree());
     }
 
     @Operation(summary = "获取当前用户菜单树（按角色过滤）")
     @GetMapping("/user-tree")
-    public R<List<SysMenu>> userTree() {
+    public R<List<SysMenuVO>> userTree() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated()) {
             return R.fail(401, "未登录");
@@ -53,50 +52,29 @@ public class SysMenuController {
 
     @Operation(summary = "根据ID查询菜单")
     @GetMapping("/{id}")
-    public R<SysMenu> getById(@PathVariable("id") Long id) {
-        SysMenu menu = sysMenuService.getById(id);
-        if (menu == null) {
-            throw new BusinessException(ResultCode.NOT_FOUND, "菜单不存在");
-        }
-        return R.ok(menu);
+    public R<SysMenuVO> getById(@PathVariable("id") Long id) {
+        return R.ok(sysMenuService.getMenuVO(id));
     }
 
     @Operation(summary = "新增菜单")
     @ApiAccessLog
     @PostMapping
-    public R<SysMenu> create(@Valid @RequestBody SysMenu menu) {
-        sysMenuService.save(menu);
-        return R.ok(menu);
+    public R<SysMenuVO> create(@Valid @RequestBody SysMenuCreateDTO dto) {
+        return R.ok(sysMenuService.saveMenu(dto));
     }
 
     @Operation(summary = "更新菜单")
     @ApiAccessLog
     @PutMapping
-    public R<SysMenu> update(@Valid @RequestBody SysMenu menu) {
-        SysMenu existing = sysMenuService.getById(menu.getId());
-        if (existing == null) {
-            throw new BusinessException(ResultCode.NOT_FOUND, "菜单不存在");
-        }
-        sysMenuService.updateById(menu);
-        return R.ok(menu);
+    public R<SysMenuVO> update(@Valid @RequestBody SysMenuUpdateDTO dto) {
+        return R.ok(sysMenuService.updateMenu(dto));
     }
 
-    @Operation(summary = "删除菜单（检查子菜单）")
+    @Operation(summary = "删除菜单（含子菜单校验）")
     @ApiAccessLog
     @DeleteMapping("/{id}")
     public R<Void> delete(@PathVariable("id") Long id) {
-        SysMenu menu = sysMenuService.getById(id);
-        if (menu == null) {
-            throw new BusinessException(ResultCode.NOT_FOUND, "菜单不存在");
-        }
-        // check children
-        LambdaQueryWrapper<SysMenu> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SysMenu::getParentId, id);
-        long childCount = sysMenuService.count(wrapper);
-        if (childCount > 0) {
-            throw new BusinessException(ResultCode.BUSINESS_ERROR, "存在子菜单，无法删除");
-        }
-        sysMenuService.removeById(id);
+        sysMenuService.deleteMenu(id);
         return R.ok();
     }
 }

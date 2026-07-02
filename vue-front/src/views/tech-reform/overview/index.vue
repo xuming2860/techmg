@@ -169,7 +169,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -237,7 +237,7 @@ const dialog = reactive({
 async function fetchData() {
   loading.value = true
   try {
-    const params = {
+    const params: Record<string, any> = {
       page: queryForm.page,
       size: queryForm.size
     }
@@ -307,7 +307,7 @@ function handleDelete(row) {
 }
 
 function goToSubtask(row) {
-  router.push({ path: '/tech-reform/subtask', query: { parentTaskId: row.id } })
+  router.push({ name: '子任务管理', query: { parentTaskId: row.id } })
 }
 
 // Init
@@ -319,7 +319,7 @@ onMounted(async () => {
     ])
     categoryOptions.value = Array.isArray(cat) ? cat : []
     subcategoryOptions.value = Array.isArray(subcat) ? subcat : []
-  } catch {
+  } catch (err) {
     // Non-fatal
   }
   fetchData()

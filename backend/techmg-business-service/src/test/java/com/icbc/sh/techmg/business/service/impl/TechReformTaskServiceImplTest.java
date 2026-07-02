@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.icbc.sh.techmg.business.entity.TechReformTask;
 import com.icbc.sh.techmg.business.mapper.TechReformTaskMapper;
+import com.icbc.sh.techmg.business.vo.TechReformTaskVO;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -56,7 +57,7 @@ public class TechReformTaskServiceImplTest {
 
         doReturn(page).when(service).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        IPage<TechReformTask> result = service.pageTasks(new Page<>(1, 10), "MySQL", null, null);
+        IPage<TechReformTaskVO> result = service.pageTasks(new Page<>(1, 10), "MySQL", null, null);
 
         assertNotNull(result);
         assertEquals(1, result.getTotal());
@@ -74,7 +75,7 @@ public class TechReformTaskServiceImplTest {
 
         doReturn(page).when(service).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        IPage<TechReformTask> result = service.pageTasks(new Page<>(1, 10), null, "DB", null);
+        IPage<TechReformTaskVO> result = service.pageTasks(new Page<>(1, 10), null, "DB", null);
 
         assertEquals(1, result.getTotal());
     }
@@ -90,7 +91,7 @@ public class TechReformTaskServiceImplTest {
 
         doReturn(page).when(service).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        IPage<TechReformTask> result = service.pageTasks(new Page<>(1, 10), null, null, "IN_PROGRESS");
+        IPage<TechReformTaskVO> result = service.pageTasks(new Page<>(1, 10), null, null, "IN_PROGRESS");
 
         assertEquals(1, result.getTotal());
     }
@@ -108,11 +109,11 @@ public class TechReformTaskServiceImplTest {
 
         doReturn(page).when(service).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        IPage<TechReformTask> result = service.pageTasks(
+        IPage<TechReformTaskVO> result = service.pageTasks(
                 new Page<>(1, 10), "Redis", "CACHE", "PENDING");
 
         assertEquals(1, result.getTotal());
-        TechReformTask record = result.getRecords().get(0);
+        TechReformTaskVO record = result.getRecords().get(0);
         assertEquals("Redis迁移", record.getTaskName());
         assertEquals("CACHE", record.getTaskCategory());
         assertEquals("PENDING", record.getStatus());
@@ -130,7 +131,7 @@ public class TechReformTaskServiceImplTest {
 
         doReturn(page).when(service).page(any(Page.class), any(LambdaQueryWrapper.class));
 
-        IPage<TechReformTask> result = service.pageTasks(new Page<>(1, 10), null, null, null);
+        IPage<TechReformTaskVO> result = service.pageTasks(new Page<>(1, 10), null, null, null);
 
         assertEquals(2, result.getTotal());
     }
@@ -151,8 +152,8 @@ public class TechReformTaskServiceImplTest {
         verify(service).updateById(any(TechReformTask.class));
     }
 
-    @Test
-    public void shouldNotUpdateStatusWhenTaskNotFound() {
+    @Test(expected = com.icbc.sh.techmg.common.exception.BusinessException.class)
+    public void shouldThrowWhenUpdateStatusTaskNotFound() {
         doReturn(null).when(service).getById(999L);
 
         service.updateStatus(999L, "IN_PROGRESS");

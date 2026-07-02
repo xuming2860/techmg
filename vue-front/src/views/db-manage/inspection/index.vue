@@ -8,7 +8,7 @@
     </el-card>
   </div>
 </template>
-<script setup></script>
+<script setup lang="ts"></script>
 <style lang="scss" scoped>
 .page-container {
   padding: 0;

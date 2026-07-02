@@ -26,7 +26,7 @@
   </div>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -45,7 +45,7 @@ const statusText = ref('正在获取认证配置...')
 // ========== 通用：登录成功 → 跳转 ==========
 
 async function afterLogin(data) {
-  console.log('[Login] afterLogin received:', data)
+  console.debug('[Login] afterLogin received:', data)
   userStore.setToken(data.token)
   if (data.userInfo) {
     userStore.setUserInfo(data.userInfo)
@@ -61,8 +61,8 @@ async function afterLogin(data) {
     console.warn('[Login] getUserMenuTree failed:', e)
   }
 
-  console.log('[Login] token set:', !!userStore.token, 'userInfo:', userStore.userInfo)
-  router.replace('/')
+  console.debug('[Login] token set:', !!userStore.token, 'userInfo:', userStore.userInfo)
+  router.replace({ name: 'main' })
 }
 
 // ========== Mock 自动登录 ==========
@@ -71,7 +71,7 @@ async function autoMockLogin() {
   statusText.value = '正在登录...'
   try {
     const data = await login({ authNo: '', password: '' })
-    console.log('[Login] mock login response:', data)
+    console.debug('[Login] mock login response:', data)
     await afterLogin(data)
   } catch (e) {
     console.error('[Login] mock login failed:', e)
@@ -90,7 +90,7 @@ async function handleSsoLogin() {
     } else {
       ElMessage.warning('SSO 登录地址未配置')
     }
-  } catch {
+  } catch (err) {
     ElMessage.error('获取 SSO 登录地址失败')
   } finally {
     loading.value = false
@@ -131,7 +131,7 @@ onMounted(async () => {
       authMode.value = 'mock'
       await autoMockLogin()
     }
-  } catch {
+  } catch (err) {
     // 查询失败，默认自动 mock 登录
     authMode.value = 'mock'
     await autoMockLogin()

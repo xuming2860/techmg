@@ -85,18 +85,25 @@
   </el-dialog>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createTask, updateTask, getDictByType } from '@/api/tech-reform'
 import { useUserStore } from '@/store/user'
 
-const props = defineProps({
-  visible: { type: Boolean, default: false },
-  task: { type: Object, default: null }
+interface Props {
+  visible?: boolean
+  task?: Record<string, any> | null
+}
+const props = withDefaults(defineProps<Props>(), {
+  visible: false,
+  task: null
 })
 
-const emit = defineEmits(['update:visible', 'saved'])
+const emit = defineEmits<{
+  (e: 'update:visible', value: boolean): void
+  (e: 'saved'): void
+}>()
 
 const userStore = useUserStore()
 
@@ -159,7 +166,7 @@ async function loadDicts() {
     categoryOptions.value = Array.isArray(cat) ? cat : []
     subcategoryOptions.value = Array.isArray(subcat) ? subcat : []
     sourceOptions.value = Array.isArray(src) ? src : []
-  } catch {
+  } catch (err) {
     // Dict load failure is non-fatal
   }
 }

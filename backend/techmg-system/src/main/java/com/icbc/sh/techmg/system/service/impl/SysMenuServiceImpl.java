@@ -2,6 +2,11 @@ package com.icbc.sh.techmg.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.icbc.sh.techmg.common.constant.ResultCode;
+import com.icbc.sh.techmg.common.exception.BusinessException;
+import com.icbc.sh.techmg.common.util.TreeUtil;
+import com.icbc.sh.techmg.system.dto.SysMenuCreateDTO;
+import com.icbc.sh.techmg.system.dto.SysMenuUpdateDTO;
 import com.icbc.sh.techmg.system.entity.SysMenu;
 import com.icbc.sh.techmg.system.entity.SysRole;
 import com.icbc.sh.techmg.system.entity.SysRoleMenu;
@@ -11,13 +16,20 @@ import com.icbc.sh.techmg.system.mapper.SysRoleMapper;
 import com.icbc.sh.techmg.system.mapper.SysRoleMenuMapper;
 import com.icbc.sh.techmg.system.mapper.SysUserRoleMapper;
 import com.icbc.sh.techmg.system.service.SysMenuService;
-import com.icbc.sh.techmg.common.util.TreeUtil;
+import com.icbc.sh.techmg.system.vo.SysMenuVO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> implements SysMenuService {
@@ -27,19 +39,20 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
     private final SysRoleMapper sysRoleMapper;
 
     @Override
-    public List<SysMenu> getMenuTree() {
+    public List<SysMenuVO> getMenuTree() {
         List<SysMenu> allMenus = this.list();
         if (allMenus.isEmpty()) {
             return Collections.emptyList();
         }
         allMenus.sort(Comparator.comparing(SysMenu::getSort, Comparator.nullsLast(Comparator.naturalOrder())));
-        setLayout(allMenus);
-        return TreeUtil.buildTree(allMenus, SysMenu::getId, SysMenu::getParentId,
-                SysMenu::setChildren, 0L);
+        List<SysMenuVO> voList = allMenus.stream().map(this::toVO).collect(Collectors.toList());
+        setLayout(voList);
+        return TreeUtil.buildTree(voList, SysMenuVO::getId, SysMenuVO::getParentId,
+                SysMenuVO::setChildren, 0L);
     }
 
     @Override
-    public List<SysMenu> getMenusByRoleId(Long roleId) {
+    public List<SysMenuVO> getMenusByRoleId(Long roleId) {
         LambdaQueryWrapper<SysRoleMenu> rmWrapper = new LambdaQueryWrapper<>();
         rmWrapper.eq(SysRoleMenu::getRoleId, roleId);
         List<SysRoleMenu> roleMenus = sysRoleMenuMapper.selectList(rmWrapper);
@@ -51,11 +64,12 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
         List<Long> menuIds = roleMenus.stream()
                 .map(SysRoleMenu::getMenuId)
                 .collect(Collectors.toList());
-        return this.listByIds(menuIds);
+        List<SysMenu> menus = this.listByIds(menuIds);
+        return menus.stream().map(this::toVO).collect(Collectors.toList());
     }
 
     @Override
-    public List<SysMenu> getMenuTreeByUserId(Long userId) {
+    public List<SysMenuVO> getMenuTreeByUserId(Long userId) {
         // 1. get user's role IDs
         LambdaQueryWrapper<SysUserRole> urWrapper = new LambdaQueryWrapper<>();
         urWrapper.eq(SysUserRole::getUserId, userId);
@@ -105,7 +119,7 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
                     && menuIdSet.contains(menu.getId())
                     && !menuIdSet.contains(menu.getParentId())) {
                 SysMenu parent = allMenus.stream()
-                        .filter(m -> m.getId().equals(menu.getParentId()))
+                        .filter(m -> Objects.equals(m.getId(), menu.getParentId()))
                         .findFirst().orElse(null);
                 if (parent != null && !menuIdSet.contains(parent.getId())) {
                     filtered.add(parent);
@@ -114,23 +128,74 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
             }
         }
         filtered.sort(Comparator.comparing(SysMenu::getSort, Comparator.nullsLast(Comparator.naturalOrder())));
-        setLayout(filtered);
 
-        return TreeUtil.buildTree(filtered, SysMenu::getId, SysMenu::getParentId,
-                SysMenu::setChildren, 0L);
+        List<SysMenuVO> voList = filtered.stream().map(this::toVO).collect(Collectors.toList());
+        setLayout(voList);
+
+        return TreeUtil.buildTree(voList, SysMenuVO::getId, SysMenuVO::getParentId,
+                SysMenuVO::setChildren, 0L);
+    }
+
+    @Override
+    public SysMenuVO getMenuVO(Long id) {
+        SysMenu entity = getById(id);
+        if (entity == null) {
+            throw new BusinessException(ResultCode.NOT_FOUND, "菜单不存在");
+        }
+        return toVO(entity);
+    }
+
+    @Override
+    public SysMenuVO saveMenu(SysMenuCreateDTO dto) {
+        SysMenu entity = new SysMenu();
+        BeanUtils.copyProperties(dto, entity);
+        save(entity);
+        return toVO(entity);
+    }
+
+    @Override
+    public SysMenuVO updateMenu(SysMenuUpdateDTO dto) {
+        SysMenu existing = getById(dto.getId());
+        if (existing == null) {
+            throw new BusinessException(ResultCode.NOT_FOUND, "菜单不存在");
+        }
+        BeanUtils.copyProperties(dto, existing);
+        updateById(existing);
+        return toVO(existing);
+    }
+
+    @Override
+    public void deleteMenu(Long id) {
+        SysMenu menu = getById(id);
+        if (menu == null) {
+            throw new BusinessException(ResultCode.NOT_FOUND, "菜单不存在");
+        }
+        long childCount = count(new LambdaQueryWrapper<SysMenu>().eq(SysMenu::getParentId, id));
+        if (childCount > 0) {
+            throw new BusinessException(ResultCode.BUSINESS_ERROR, "存在子菜单，无法删除");
+        }
+        removeById(id);
+    }
+
+    private SysMenuVO toVO(SysMenu entity) {
+        SysMenuVO vo = new SysMenuVO();
+        BeanUtils.copyProperties(entity, vo);
+        // Copy layout from @TableField(exist = false)
+        vo.setLayout(entity.getLayout());
+        return vo;
     }
 
     /**
-     * Set layout on each menu:
+     * Set layout on each menu VO:
      * - id=1 (首页/dashboard) → "top" (上下布局)
      * - all other menus → "side" (上左右布局)
      */
-    private void setLayout(List<SysMenu> menus) {
-        for (SysMenu menu : menus) {
-            if (menu.getId() != null && menu.getId() == 1L) {
-                menu.setLayout("top");
+    private void setLayout(List<SysMenuVO> vos) {
+        for (SysMenuVO vo : vos) {
+            if (vo.getId() != null && vo.getId() == 1L) {
+                vo.setLayout("top");
             } else {
-                menu.setLayout("side");
+                vo.setLayout("side");
             }
         }
     }
