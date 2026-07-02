@@ -4,13 +4,13 @@
 <mapper namespace="com.icbc.sh.techmg.system.mapper.SysUserMapper">
 
     <select id="selectUserPage" resultType="com.icbc.sh.techmg.system.entity.SysUser">
-        SELECT u.id, u.auth_no, u.username, u.real_name, u.email, u.phone,
-               u.dept_id, u.status, u.create_time, u.create_by, u.update_time, u.update_by, u.deleted
+        SELECT u.id, u.user_id, u.username, u.branch_id, u.branch_name, u.notes_id,
+               u.last_login_time, u.status,
+               u.create_time, u.create_by, u.update_time, u.update_by, u.deleted
         FROM sys_user u
         WHERE u.deleted = 0
         <if test="dto.keyword != null and dto.keyword != ''">
-            AND (u.auth_no LIKE CONCAT('%', #{dto.keyword}, '%')
-                 OR u.real_name LIKE CONCAT('%', #{dto.keyword}, '%')
+            AND (u.user_id LIKE CONCAT('%', #{dto.keyword}, '%')
                  OR u.username LIKE CONCAT('%', #{dto.keyword}, '%'))
         </if>
         ORDER BY u.create_time DESC

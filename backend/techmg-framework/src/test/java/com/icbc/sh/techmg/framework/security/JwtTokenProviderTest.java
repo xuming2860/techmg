@@ -27,7 +27,7 @@ public class JwtTokenProviderTest {
 
         assertNotNull("token should not be null", token);
         assertFalse("token should not be blank", token.isBlank());
-        assertEquals("authNo should be extracted from token", "admin", provider.getAuthNo(token));
+        assertEquals("authNo should be extracted from token", "admin", provider.getUserId(token));
     }
 
     @Test

@@ -24,8 +24,8 @@ public class SsicUser {
     /** 统一认证号（9位 userId） */
     private String userId;
 
-    /** 用户中文名 */
-    private String tellerName;
+    /** 用户中文名 (SSIC TELLERNAME) */
+    private String username;
 
     /** 用户 AD 账号 */
     private String ad;

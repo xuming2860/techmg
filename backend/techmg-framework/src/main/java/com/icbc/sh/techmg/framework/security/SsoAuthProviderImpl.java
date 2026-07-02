@@ -66,8 +66,7 @@ public class SsoAuthProviderImpl implements SsoAuthProvider {
         if (ssiAuth != null && !ssiAuth.isBlank()) {
             return SsicUser.builder()
                     .userId(ssiAuth)
-                    .tellerName("Mock用户")
-                    .ad("")
+                    .username("Mock用户")
                     .branchId("12092342")
                     .branchName("上海技术部")
                     .notesId(ssiAuth + "@sdc.com")
@@ -150,9 +149,8 @@ public class SsoAuthProviderImpl implements SsoAuthProvider {
         log.info("[SSIC] queryUserInfo using MOCK data for userId: {}", userId);
 
         Map<String, Object> userInfo = new LinkedHashMap<>();
-        userInfo.put("authNo", userId);
-        userInfo.put("tellername", "徐敏");
-        userInfo.put("ad", "");
+        userInfo.put("userId", userId);
+        userInfo.put("username", "徐敏");
         userInfo.put("branchId", "12092342");
         userInfo.put("branchName", "上海技术部");
         userInfo.put("notesId", userId + "@sdc.com");

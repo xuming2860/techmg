@@ -174,7 +174,7 @@ public class TechReformItemServiceImpl extends ServiceImpl<TechReformItemMapper,
 
         if (authentication.getPrincipal() instanceof UserDetails userDetails) {
             String authNo = userDetails.getUsername();
-            SysUser sysUser = sysUserService.getByAuthNo(authNo);
+            SysUser sysUser = sysUserService.getByUserId(authNo);
             if (sysUser != null) {
                 return sysUser.getBranchId();
             }

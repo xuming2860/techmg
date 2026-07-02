@@ -39,9 +39,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Override
     @DS("slave")
-    public SysUser getByAuthNo(String authNo) {
+    public SysUser getByUserId(String userId) {
         LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(SysUser::getAuthNo, authNo);
+        wrapper.eq(SysUser::getUserId, userId);
         return this.getOne(wrapper);
     }
 
@@ -59,12 +59,10 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void assignRoles(Long userId, List<Long> roleIds) {
-        // clear existing
         LambdaQueryWrapper<SysUserRole> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysUserRole::getUserId, userId);
         sysUserRoleMapper.delete(wrapper);
 
-        // insert new
         if (roleIds != null && !roleIds.isEmpty()) {
             for (Long roleId : roleIds) {
                 SysUserRole ur = new SysUserRole();
@@ -78,18 +76,16 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
     @Override
     @Transactional(rollbackFor = Exception.class)
     public SysUser syncUserInfo(Map<String, Object> info) {
-        String authNo = (String) info.get("authNo");
-        SysUser user = getByAuthNo(authNo);
+        String userId = (String) info.get("userId");
+        SysUser user = getByUserId(userId);
 
         if (user == null) {
-            // First login — create user, save first to get id, then assign default role
             user = new SysUser();
-            user.setAuthNo(authNo);
-            user.setUsername(authNo);
-            user.setStatus(1); // enabled
+            user.setUserId(userId);
+            user.setUsername((String) info.getOrDefault("username", ""));
+            user.setStatus(1);
             this.save(user);
 
-            // Assign default GUEST role (query by code, not hardcoded id)
             SysRole guestRole = sysRoleMapper.selectOne(
                 new LambdaQueryWrapper<SysRole>().eq(SysRole::getRoleCode, "GUEST"));
             if (guestRole != null) {
@@ -100,14 +96,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             }
         }
 
-        // Update fields from SSIC/AAM API
-        user.setRealName((String) info.getOrDefault("tellername", ""));
-        user.setAdAccount((String) info.getOrDefault("ad", ""));
+        // Update from SSIC/AAM
+        user.setUsername((String) info.getOrDefault("username", user.getUsername()));
         user.setBranchId((String) info.getOrDefault("branchId", ""));
         user.setBranchName((String) info.getOrDefault("branchName", ""));
         user.setNotesId((String) info.getOrDefault("notesId", ""));
         user.setLastLoginTime(java.time.LocalDateTime.now());
-
         this.saveOrUpdate(user);
 
         // Sync branch list

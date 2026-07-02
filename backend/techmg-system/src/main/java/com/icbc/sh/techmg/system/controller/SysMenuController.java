@@ -42,8 +42,8 @@ public class SysMenuController {
             return R.fail(401, "未登录");
         }
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String authNo = userDetails.getUsername();
-        SysUser sysUser = sysUserService.getByAuthNo(authNo);
+        String userId = userDetails.getUsername();
+        SysUser sysUser = sysUserService.getByUserId(userId);
         if (sysUser == null) {
             return R.fail(401, "用户不存在");
         }

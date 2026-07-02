@@ -6,13 +6,10 @@ import lombok.Data;
 @Data
 public class SysUserCreateDTO {
     @NotBlank(message = "认证号不能为空")
-    private String authNo;
+    private String userId;
 
-    @NotBlank(message = "真实姓名不能为空")
-    private String realName;
-
+    @NotBlank(message = "姓名不能为空")
     private String username;
-    private Long deptId;
-    private String email;
-    private String phone;
+
+    private String notesId;
 }

@@ -58,12 +58,9 @@ public class SysUserController {
     @PostMapping
     public R<SysUser> create(@Valid @RequestBody SysUserCreateDTO dto) {
         SysUser user = new SysUser();
-        user.setAuthNo(dto.getAuthNo());
+        user.setUserId(dto.getUserId());
         user.setUsername(dto.getUsername());
-        user.setRealName(dto.getRealName());
-        user.setDeptId(dto.getDeptId());
-        user.setEmail(dto.getEmail());
-        user.setPhone(dto.getPhone());
+        user.setNotesId(dto.getNotesId());
         user.setStatus(1);
         sysUserService.save(user);
         return R.ok(user);
@@ -77,10 +74,8 @@ public class SysUserController {
         if (user == null) {
             throw new BusinessException(ResultCode.NOT_FOUND, "用户不存在");
         }
-        if (dto.getRealName() != null) user.setRealName(dto.getRealName());
-        if (dto.getDeptId() != null) user.setDeptId(dto.getDeptId());
-        if (dto.getEmail() != null) user.setEmail(dto.getEmail());
-        if (dto.getPhone() != null) user.setPhone(dto.getPhone());
+        if (dto.getUsername() != null) user.setUsername(dto.getUsername());
+        if (dto.getNotesId() != null) user.setNotesId(dto.getNotesId());
         if (dto.getStatus() != null) user.setStatus(dto.getStatus());
         sysUserService.updateById(user);
         return R.ok(user);

@@ -30,23 +30,23 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private final SysRoleMapper sysRoleMapper;
 
     @Override
-    public UserDetails loadUserByUsername(String authNo) throws UsernameNotFoundException {
-        SysUser sysUser = sysUserService.getByAuthNo(authNo);
+    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
+        SysUser sysUser = sysUserService.getByUserId(userId);
         if (sysUser == null) {
-            log.warn("User not found by authNo: {}", authNo);
-            throw new UsernameNotFoundException("用户不存在: " + authNo);
+            log.warn("User not found by userId: {}", userId);
+            throw new UsernameNotFoundException("用户不存在: " + userId);
         }
 
         if (sysUser.getStatus() != null && sysUser.getStatus() == 0) {
-            log.warn("User is disabled: {}", authNo);
-            throw new org.springframework.security.authentication.DisabledException("用户已被禁用: " + authNo);
+            log.warn("User is disabled: {}", userId);
+            throw new org.springframework.security.authentication.DisabledException("用户已被禁用: " + userId);
         }
 
         List<SimpleGrantedAuthority> authorities = loadAuthorities(sysUser.getId());
 
         return User.builder()
-                .username(sysUser.getAuthNo())
-                .password(sysUser.getPassword() != null ? sysUser.getPassword() : "")
+                .username(sysUser.getUserId())
+                .password("")
                 .authorities(authorities)
                 .accountExpired(false)
                 .accountLocked(false)

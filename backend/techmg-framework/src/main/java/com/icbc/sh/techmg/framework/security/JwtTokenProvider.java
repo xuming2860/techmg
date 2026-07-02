@@ -27,7 +27,7 @@ public class JwtTokenProvider {
         this.expiration = expiration;
     }
 
-    public String generateToken(String authNo, Collection<? extends GrantedAuthority> authorities) {
+    public String generateToken(String userId, Collection<? extends GrantedAuthority> authorities) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + expiration);
 
@@ -36,7 +36,7 @@ public class JwtTokenProvider {
                 .collect(Collectors.joining(","));
 
         return Jwts.builder()
-                .subject(authNo)
+                .subject(userId)
                 .claim("roles", roles)
                 .issuedAt(now)
                 .expiration(expiryDate)
@@ -44,7 +44,7 @@ public class JwtTokenProvider {
                 .compact();
     }
 
-    public String getAuthNo(String token) {
+    public String getUserId(String token) {
         Claims claims = parseToken(token);
         return claims.getSubject();
     }

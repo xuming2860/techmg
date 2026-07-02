@@ -9,17 +9,11 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @TableName("sys_user")
 public class SysUser extends BaseEntity {
-    private String authNo;
-    private String password;
-    private String username;
-    private String realName;
-    private String email;
-    private String phone;
-    private Long deptId;
-    private String adAccount;
+    private String userId;       // 统一认证号, 12位数字
+    private String username;     // 用户中文名 (即 SSIC TELLERNAME)
     private String branchId;
     private String branchName;
-    private String notesId;
+    private String notesId;      // 邮箱 (即 SSIC NOTESID)
     private java.time.LocalDateTime lastLoginTime;
-    private Integer status;  // 0-禁用, 1-启用
+    private Integer status;      // 0-禁用, 1-启用
 }

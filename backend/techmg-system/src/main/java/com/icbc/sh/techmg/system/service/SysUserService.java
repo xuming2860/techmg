@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 public interface SysUserService extends IService<SysUser> {
-    SysUser getByAuthNo(String authNo);
+    SysUser getByUserId(String userId);
     PageResult<SysUserVO> pageUsers(SysUserQueryDTO dto);
     void assignRoles(Long userId, List<Long> roleIds);
 

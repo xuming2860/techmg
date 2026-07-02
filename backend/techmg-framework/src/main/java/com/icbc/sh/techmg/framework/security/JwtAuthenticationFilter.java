@@ -35,7 +35,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(token)) {
             if (jwtTokenProvider.validateToken(token)) {
                 // 有效 token → 设置认证上下文
-                String authNo = jwtTokenProvider.getAuthNo(token);
+                String authNo = jwtTokenProvider.getUserId(token);
                 UserDetails userDetails = userDetailsService.loadUserByUsername(authNo);
 
                 UsernamePasswordAuthenticationToken authentication =

@@ -8,31 +8,27 @@ import java.util.List;
 
 /**
  * Mock 登录配置 — ssic.enabled=false 时生效。
- * 直接返回配置的固定用户信息 + JWT，跳过密码验证和外部 API 调用。
  */
 @Data
 @Component
 @ConfigurationProperties(prefix = "login.mock")
 public class LoginMockProperties {
 
-    /** 统一认证号 */
-    private String authNo = "admin";
+    /** 统一认证号（12位数字） */
+    private String userId = "000000000001";
 
-    /** 用户中文名（对应 SSIC TELLERNAME） */
-    private String tellerName = "平台管理员";
+    /** 用户中文名 */
+    private String username = "平台管理员";
 
     /** 机构号 */
-    private String branchId = "";
+    private String branchId = "12092342";
 
     /** 机构全名 */
-    private String branchName = "";
+    private String branchName = "上海技术部";
 
-    /** Notes ID */
-    private String notesId = "";
+    /** 邮箱（Notes ID） */
+    private String notesId = "admin@sdc.com";
 
-    /** AD 账号 */
-    private String adAccount = "";
-
-    /** 角色列表（如 ROLE_PLATFORM_ADMIN） */
+    /** 角色列表 */
     private List<String> roles = List.of("ROLE_PLATFORM_ADMIN");
 }

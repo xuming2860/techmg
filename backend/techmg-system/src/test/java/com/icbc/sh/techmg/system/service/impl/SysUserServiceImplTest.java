@@ -25,7 +25,7 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 /**
- * SysUserServiceImpl 单元测试 — syncUserInfo / getByAuthNo
+ * SysUserServiceImpl 单元测试 — syncUserInfo / getByUserId
  * 使用 Spy 绕开 MyBatis-Plus TableInfo 依赖，不连真实数据库
  */
 @RunWith(MockitoJUnitRunner.class)
@@ -45,9 +45,8 @@ public class SysUserServiceImplTest {
     @Before
     public void setUp() {
         mockExtInfo = Map.of(
-            "authNo", "admin",
-            "tellername", "平台管理员",
-            "ad", "",
+            "userId", "000000000001",
+            "username", "平台管理员",
             "branchId", "12092342",
             "branchName", "上海技术部",
             "notesId", "admin@sdc.com",
@@ -73,15 +72,15 @@ public class SysUserServiceImplTest {
     public void shouldUpdateExistingUser() {
         SysUser existingUser = new SysUser();
         existingUser.setId(1L);
-        existingUser.setAuthNo("admin");
-        existingUser.setRealName("旧名称");
-        doReturn(existingUser).when(sysUserService).getByAuthNo("admin");
+        existingUser.setUserId("000000000001");
+        existingUser.setUsername("旧名称");
+        doReturn(existingUser).when(sysUserService).getByUserId("000000000001");
 
         SysUser result = sysUserService.syncUserInfo(mockExtInfo);
 
         assertNotNull(result);
-        assertEquals("admin", result.getAuthNo());
-        assertEquals("平台管理员", result.getRealName());
+        assertEquals("000000000001", result.getUserId());
+        assertEquals("平台管理员", result.getUsername());
         assertEquals("12092342", result.getBranchId());
         assertNotNull(result.getLastLoginTime());
         // 已存在用户不应分配 GUEST 角色
@@ -90,12 +89,12 @@ public class SysUserServiceImplTest {
 
     @Test
     public void shouldCreateNewUserWithGuestRole() {
-        doReturn(null).when(sysUserService).getByAuthNo("admin");
+        doReturn(null).when(sysUserService).getByUserId("000000000001");
 
         SysUser result = sysUserService.syncUserInfo(mockExtInfo);
 
         assertNotNull(result);
-        assertEquals("admin", result.getAuthNo());
+        assertEquals("000000000001", result.getUserId());
         // 新用户应分配 GUEST 角色
         verify(sysUserRoleMapper).insert(any());
     }
@@ -104,8 +103,8 @@ public class SysUserServiceImplTest {
     public void shouldSyncBranchList() {
         SysUser existingUser = new SysUser();
         existingUser.setId(1L);
-        existingUser.setAuthNo("admin");
-        doReturn(existingUser).when(sysUserService).getByAuthNo("admin");
+        existingUser.setUserId("000000000001");
+        doReturn(existingUser).when(sysUserService).getByUserId("000000000001");
 
         sysUserService.syncUserInfo(mockExtInfo);
 

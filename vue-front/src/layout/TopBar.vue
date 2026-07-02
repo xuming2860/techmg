@@ -28,7 +28,7 @@
           <span class="avatar">{{ avatarText }}</span>
           <span class="user-info">
             <span class="user-dept">{{ userStore.userInfo?.branchName || '' }}</span>
-            <span class="user-name">{{ userStore.userInfo?.tellername || '未登录' }}</span>
+            <span class="user-name">{{ userStore.userInfo?.username || '未登录' }}</span>
           </span>
           <el-icon class="arrow"><ArrowDown /></el-icon>
         </span>
@@ -53,7 +53,7 @@ const userStore = useUserStore()
 const modules = computed(() => userStore.menus || [])
 
 const avatarText = computed(() => {
-  const name = userStore.userInfo?.tellername || '?'
+  const name = userStore.userInfo?.username || '?'
   return name.charAt(0)
 })
 

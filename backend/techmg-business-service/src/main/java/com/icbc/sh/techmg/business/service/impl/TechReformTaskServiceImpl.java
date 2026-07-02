@@ -109,9 +109,9 @@ public class TechReformTaskServiceImpl extends ServiceImpl<TechReformTaskMapper,
         if (authentication != null && authentication.isAuthenticated()
                 && authentication.getPrincipal() instanceof UserDetails userDetails) {
             String authNo = userDetails.getUsername();
-            SysUser sysUser = sysUserService.getByAuthNo(authNo);
+            SysUser sysUser = sysUserService.getByUserId(authNo);
             if (sysUser != null) {
-                return sysUser.getRealName() != null ? sysUser.getRealName() : authNo;
+                return sysUser.getUsername() != null ? sysUser.getUsername() : authNo;
             }
             return authNo;
         }

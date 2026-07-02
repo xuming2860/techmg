@@ -110,11 +110,10 @@ ssic:
 # Mock 登录配置（ssic.enabled=false 时生效）
 login:
   mock:
-    auth-no: "admin"
-    teller-name: "管理员"
+    user-id: "000000000001"
+    username: "管理员"
     branch-id: "12092342"
     branch-name: "上海技术部"
     notes-id: "admin@sdc.com"
-    ad-account: ""
     roles:
       - "ROLE_PLATFORM_ADMIN"

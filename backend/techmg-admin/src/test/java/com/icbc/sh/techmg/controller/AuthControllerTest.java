@@ -31,6 +31,7 @@ public class AuthControllerTest {
     @Mock private JwtTokenProvider jwtTokenProvider;
     @Mock private SysUserService sysUserService;
     @Mock private LoginMockProperties loginMockProperties;
+
     @Mock private SsicProperties ssicProperties;
 
     @InjectMocks
@@ -46,29 +47,27 @@ public class AuthControllerTest {
 
         when(ssicProperties.isEnabled()).thenReturn(false);
 
-        when(loginMockProperties.getAuthNo()).thenReturn("admin");
-        when(loginMockProperties.getTellerName()).thenReturn("平台管理员");
+        when(loginMockProperties.getUserId()).thenReturn("000000000001");
+        when(loginMockProperties.getUsername()).thenReturn("平台管理员");
         when(loginMockProperties.getBranchId()).thenReturn("12092342");
         when(loginMockProperties.getBranchName()).thenReturn("上海技术部");
         when(loginMockProperties.getNotesId()).thenReturn("admin@sdc.com");
-        when(loginMockProperties.getAdAccount()).thenReturn("");
         when(loginMockProperties.getRoles()).thenReturn(List.of("ROLE_PLATFORM_ADMIN"));
 
-        when(jwtTokenProvider.generateToken(eq("admin"), anyList()))
+        when(jwtTokenProvider.generateToken(eq("000000000001"), anyList()))
                 .thenReturn("mock-jwt-token-string");
 
         SysUser mockUser = new SysUser();
         mockUser.setId(1L);
-        mockUser.setAuthNo("admin");
-        mockUser.setRealName("平台管理员");
+        mockUser.setUserId("000000000001");
+        mockUser.setUsername("平台管理员");
         when(sysUserService.syncUserInfo(anyMap())).thenReturn(mockUser);
     }
 
     @Test
     public void mockLoginShouldReturnTokenAndUserInfo() {
         Map<String, String> body = new HashMap<>();
-        body.put("authNo", "anyone");
-        body.put("password", "any");
+        body.put("userId", "anyone");
         R<Map<String, Object>> result = authController.loginPost(request, response, body);
 
         assertNotNull(result);
@@ -81,8 +80,8 @@ public class AuthControllerTest {
         @SuppressWarnings("unchecked")
         Map<String, Object> userInfo = (Map<String, Object>) data.get("userInfo");
         assertNotNull(userInfo);
-        assertEquals("admin", userInfo.get("authNo"));
-        assertEquals("平台管理员", userInfo.get("tellername"));
+        assertEquals("000000000001", userInfo.get("userId"));
+        assertEquals("平台管理员", userInfo.get("username"));
         assertEquals("12092342", userInfo.get("branchId"));
         assertTrue(((List<?>) userInfo.get("roles")).contains("ROLE_PLATFORM_ADMIN"));
     }
@@ -103,13 +102,12 @@ public class AuthControllerTest {
     @Test
     public void mockLoginShouldUseConfiguredUserRegardlessOfInput() {
         Map<String, String> body = new HashMap<>();
-        body.put("authNo", "random-user");
-        body.put("password", "xxx");
+        body.put("userId", "random-user");
         R<Map<String, Object>> result = authController.loginPost(request, response, body);
 
         @SuppressWarnings("unchecked")
         Map<String, Object> ui = (Map<String, Object>) result.getData().get("userInfo");
-        assertEquals("admin", ui.get("authNo"));
+        assertEquals("000000000001", ui.get("userId"));
     }
 
     @Test
@@ -121,6 +119,6 @@ public class AuthControllerTest {
 
         @SuppressWarnings("unchecked")
         Map<String, Object> ui = (Map<String, Object>) result.getData().get("userInfo");
-        assertEquals("admin", ui.get("authNo"));
+        assertEquals("000000000001", ui.get("userId"));
     }
 }

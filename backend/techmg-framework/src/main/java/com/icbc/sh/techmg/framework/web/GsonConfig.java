@@ -18,6 +18,7 @@ public class GsonConfig implements WebMvcConfigurer {
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     private static final DateTimeFormatter DATETIME_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
+    /** 全局 Gson Bean — 注册 LocalDate/LocalDateTime 适配器，Java 17+ 兼容 */
     @Bean
     public Gson gson() {
         return new GsonBuilder()

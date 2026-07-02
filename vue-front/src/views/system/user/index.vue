@@ -25,11 +25,9 @@
 
       <el-table :data="tableData" border stripe v-loading="loading" style="width: 100%">
         <el-table-column prop="id" label="ID" width="60" />
-        <el-table-column prop="authNo" label="认证号" width="120" />
-        <el-table-column prop="realName" label="姓名" width="100" />
-        <el-table-column prop="username" label="用户名" width="120" />
-        <el-table-column prop="email" label="邮箱" min-width="160" show-overflow-tooltip />
-        <el-table-column prop="phone" label="手机号" width="130" />
+        <el-table-column prop="userId" label="认证号" width="130" />
+        <el-table-column prop="username" label="姓名" width="100" />
+        <el-table-column prop="notesId" label="邮箱" min-width="160" show-overflow-tooltip />
         <el-table-column label="状态" width="80">
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'" size="small">
@@ -65,43 +63,14 @@
       width="520px"
     >
       <el-form ref="formRef" :model="dialog.form" :rules="rules" label-width="80px">
-        <el-form-item label="认证号" prop="authNo">
-          <el-input
-            v-model="dialog.form.authNo"
-            :disabled="dialog.isEdit"
-            placeholder="统一认证号"
-          />
+        <el-form-item label="认证号" prop="userId">
+          <el-input v-model="dialog.form.userId" :disabled="dialog.isEdit" placeholder="12位数字" />
         </el-form-item>
-        <el-form-item label="姓名" prop="realName">
-          <el-input v-model="dialog.form.realName" placeholder="真实姓名" />
-        </el-form-item>
-        <el-form-item label="用户名">
-          <el-input v-model="dialog.form.username" placeholder="用户名" />
-        </el-form-item>
-        <el-form-item label="密码" v-if="!dialog.isEdit">
-          <el-input
-            v-model="dialog.form.password"
-            type="password"
-            placeholder="登录密码"
-            show-password
-          />
+        <el-form-item label="姓名" prop="username">
+          <el-input v-model="dialog.form.username" placeholder="中文姓名" />
         </el-form-item>
         <el-form-item label="邮箱">
-          <el-input v-model="dialog.form.email" placeholder="邮箱" />
-        </el-form-item>
-        <el-form-item label="手机号">
-          <el-input v-model="dialog.form.phone" placeholder="手机号" />
-        </el-form-item>
-        <el-form-item label="部门">
-          <el-tree-select
-            v-model="dialog.form.deptId"
-            :data="deptTree"
-            :props="{ label: 'deptName', value: 'id' }"
-            placeholder="选择部门"
-            check-strictly
-            clearable
-            style="width: 100%"
-          />
+          <el-input v-model="dialog.form.notesId" placeholder="邮箱" />
         </el-form-item>
         <el-form-item label="状态">
           <el-switch v-model="dialog.form.status" :active-value="1" :inactive-value="0" />
@@ -142,13 +111,11 @@ import {
   getUserRoles
 } from '@/api/system/user'
 import { getRoleList } from '@/api/system/role'
-import { getDeptTree } from '@/api/system/dept'
 
 const queryForm = reactive({ page: 1, size: 10, keyword: '' })
 const tableData = ref([])
 const total = ref(0)
 const loading = ref(false)
-const deptTree = ref([])
 
 async function fetchData() {
   loading.value = true
@@ -177,39 +144,31 @@ const dialog = reactive({
   loading: false,
   form: {
     id: null,
-    authNo: '',
-    realName: '',
+    userId: '',
     username: '',
-    password: '',
-    email: '',
-    phone: '',
-    deptId: null,
+    notesId: '',
     status: 1
   }
 })
 const rules = {
-  authNo: [{ required: true, message: '请输入认证号', trigger: 'blur' }],
-  realName: [{ required: true, message: '请输入姓名', trigger: 'blur' }]
+  userId: [{ required: true, message: '请输入认证号', trigger: 'blur' }],
+  username: [{ required: true, message: '请输入姓名', trigger: 'blur' }]
 }
 
 function handleAdd() {
   dialog.isEdit = false
   Object.assign(dialog.form, {
     id: null,
-    authNo: '',
-    realName: '',
+    userId: '',
     username: '',
-    password: '',
-    email: '',
-    phone: '',
-    deptId: null,
+    notesId: '',
     status: 1
   })
   dialog.visible = true
 }
 function handleEdit(row) {
   dialog.isEdit = true
-  Object.assign(dialog.form, { ...row, deptId: row.deptId || null })
+  Object.assign(dialog.form, { ...row })
   dialog.visible = true
 }
 async function handleSubmit() {
@@ -227,7 +186,7 @@ async function handleSubmit() {
   }
 }
 function handleDelete(row) {
-  ElMessageBox.confirm(`确定删除「${row.realName || row.authNo}」?`, '确认', {
+  ElMessageBox.confirm(`确定删除「${row.username || row.userId}」?`, '确认', {
     type: 'warning'
   }).then(async () => {
     await deleteUser(row.id)
@@ -272,7 +231,6 @@ async function handleRoleSubmit() {
 onMounted(async () => {
   fetchData()
   try {
-    deptTree.value = await getDeptTree()
   } catch (e) {
     /*empty*/
   }

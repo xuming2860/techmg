@@ -37,6 +37,8 @@ techmg/
 | v1.0 | 2025-06 | 平台初版: RBAC + 菜单 + 技术治理占位 |
 | **v2.0** | **2026-06** | **登录改造 + ApiAccessLog 优化 + 技改任务管理** |
 
+| **v2.1** | **2026-07** | **SSIC 统一认证登录改造** |
+
 ## 技术栈（精确版本）
 
 | 维度 | 选型 | 版本 |
@@ -93,6 +95,7 @@ techmg/
 | [vue-front/CLAUDE.md](vue-front/CLAUDE.md) | 功能模块+页面清单、编码规约（10节+Element Plus专项）、核心设计、构建 |
 | [techmgdb/polardb/README.md](techmgdb/polardb/README.md) | SQL 命名规范、版本管理规则 |
 | [docs/superpowers/specs/2026-06-30-v2-design.md](docs/superpowers/specs/2026-06-30-v2-design.md) | v2.0 设计文档 |
+| [docs/database/tables.md](docs/database/tables.md) | 数据库表资产清单（23表，含变更记录） |
 
 ---
 
@@ -167,3 +170,4 @@ techmg/
 - [ ] 敏感密码是否使用 `${ENV}` 占位符而非硬编码？
 - [ ] 遇到模糊需求时，是否主动向用户确认而非自行猜测？
 - [ ] 修改代码前，是否扫描了所有引用点并评估了影响？
+- [ ] 涉及表结构变更时，是否同步更新 [docs/database/tables.md](docs/database/tables.md)？

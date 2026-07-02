@@ -139,7 +139,6 @@
 import { ref, reactive, computed, watch, onBeforeUnmount } from 'vue'
 import { ElMessage } from 'element-plus'
 import { createSubtask, updateSubtask, pageTasks, getDictByType } from '@/api/tech-reform'
-import { getDeptTree } from '@/api/system/dept'
 import { useUserStore } from '@/store/user'
 
 interface Props {
@@ -234,27 +233,10 @@ function safeParseArray(value) {
   return []
 }
 
-function flattenDeptTree(nodes, prefix = '') {
-  const result = []
-  for (const node of nodes) {
-    const label = prefix ? `${prefix} / ${node.label}` : node.label
-    result.push({ id: node.id, label })
-    if (node.children && node.children.length > 0) {
-      result.push(...flattenDeptTree(node.children, label))
-    }
-  }
-  return result
-}
-
 async function loadOptions() {
   try {
-    const [dbTypes, deptTree] = await Promise.all([
-      getDictByType('subtask_db_type').catch(() => []),
-      getDeptTree().catch(() => [])
-    ])
+    const dbTypes = await getDictByType('subtask_db_type').catch(() => [])
     dbTypeOptions.value = Array.isArray(dbTypes) ? dbTypes : []
-    const tree = Array.isArray(deptTree) ? deptTree : []
-    deptOptions.value = flattenDeptTree(tree)
   } catch (err) {
     // Non-fatal
   }
