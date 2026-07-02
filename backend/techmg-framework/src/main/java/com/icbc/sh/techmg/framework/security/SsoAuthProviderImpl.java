@@ -151,8 +151,7 @@ public class SsoAuthProviderImpl implements SsoAuthProvider {
         userInfo.put("branchId", "12092342");
         userInfo.put("branchName", "上海技术部");
         userInfo.put("notesId", userId + "@sdc.com");
-                Map.of("branchId", "12092342", "branchName", "上海技术部")
-        ));
+                Map.of("branchId", "12092342", "branchName", "上海技术部");
 
         return userInfo;
     }
