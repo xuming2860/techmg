@@ -43,7 +43,7 @@ sys_dict_type (字典类型)          sys_dict_data (字典数据)
 
 **查询方式**: `SELECT * FROM sys_dict_data WHERE dict_type = 'task_category' ORDER BY sort`
 
-### 三、技改任务业务表（3 张）— v2.0
+### 三、技改任务业务表（3 张）
 
 | 表名 | 含义 | Java 实体 | 功能模块 | 说明 |
 |------|------|-----------|----------|------|
@@ -55,13 +55,8 @@ sys_dict_type (字典类型)          sys_dict_data (字典数据)
 
 ## 变更记录
 
-| 日期 | 版本 | 变更 | 说明 |
-|------|------|------|------|
-| 2025-06 | v1.0 | 新增 22 表 | 系统表 7 + 业务表 15（含 10 占位），后 sys_dept 在 v2.1 移除 |
-| 2026-07 | v2.1 | 移除 `sys_dept` | 前端未使用，SSIC 用 branch 体系替代部门管理 |
-| 2026-07 | v2.1 | 重构 `sys_user` | auth_no→user_id(12位), 删password/real_name/email/phone/ad_account, username=中文名, notes_id=邮箱 |
-| 2026-07 | v2.1 | 移除 `sys_user_branch` | 用户只有一个机构，branch信息已在 sys_user 表中 |
-| 2026-07 | v2.1 | 移除 10 张占位表 | 技术治理/数据库治理/巡检/资产，待具体业务需求时再创建 |
-| 2026-06 | v2.0 | ALTER `sys_user` +5列 | ad_account/branch_id/branch_name/notes_id/last_login_time |
-| 2026-06 | v2.0 | 新增 4 表 | sys_user_branch + tech_reform_task/subtask/item |
-| 2026-07 | v2.1 | SSIC 改造 | 无 DDL 变更（urlPermission/saeRole 均为内存字段，不持久化） |
+| 日期 | 变更 | 说明 |
+|------|------|------|
+| 2026-06 | 初始建表 | 11 张表：RBAC(6) + 字典(2) + 技改(3) |
+| 2026-07 | sys_user 重构 | auth_no→user_id(12位), 删无用列, username=中文名, notes_id=邮箱 |
+| 2026-07 | 清理 | 移除 sys_dept / sys_user_branch / 10 张占位表 |

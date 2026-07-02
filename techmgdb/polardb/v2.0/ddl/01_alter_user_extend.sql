@@ -1,3 +1,0 @@
--- v2.0 DDL: ALTER 扩展 sys_user 表 (已合并到 v1.0 DDL, 本文件保留作历史记录)
--- v2.1: auth_no→user_id, 删除 password/real_name/email/phone/ad_account, username=中文名
--- 实际执行请使用 v1.0/ddl/01_create_system_tables.sql 的 sys_user 定义

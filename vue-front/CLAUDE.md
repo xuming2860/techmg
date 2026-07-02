@@ -10,8 +10,8 @@ Vue 3.3.9 / Vite 5.0.4 / Element Plus 2.5.0 / Pinia 2.1.4 / Vue Router 4.2.5 / A
 
 技术管理 (上左右布局)
   ├── 技改任务管理
-  │   ├── 任务总览    /tech-reform/overview     ✅ v2.0 完成
-  │   └── 子任务管理   /tech-reform/subtask      ✅ v2.0 完成 (双Tab)
+  │   ├── 任务总览    /tech-reform/overview     ✅完成
+  │   └── 子任务管理   /tech-reform/subtask      ✅完成 (双Tab)
   ├── 数据库管理
   │   ├── DBA人员管理          /db-manage/dba        占位
   │   ├── 应用数据库管理        /db-manage/app-db     占位
@@ -42,11 +42,11 @@ Vue 3.3.9 / Vite 5.0.4 / Element Plus 2.5.0 / Pinia 2.1.4 / Vue Router 4.2.5 / A
   ├── 角色管理            /system/role           ✅
   └── 用户管理            /system/user           ✅
 
-登录    /login                                   ✅ v2.0: 自动登录 / SSO
+登录    /login                                   ✅自动登录 / SSO
 404     /:pathMatch(.*)*                         ✅
 ```
 
-> 技改任务统计 `/tech-reform/stats` 已移除 (v2.0 并入任务总览)。
+> 技改任务统计 `/tech-reform/stats` 已移除 (并入任务总览)。
 
 ## 目录结构
 
@@ -54,15 +54,15 @@ Vue 3.3.9 / Vite 5.0.4 / Element Plus 2.5.0 / Pinia 2.1.4 / Vue Router 4.2.5 / A
 vue-front/src/
 ├── api/                          # API 层
 │   ├── auth.js                   # 登录/登出/SSO/认证模式查询
-│   ├── tech-reform.js            # v2.0: 技改任务 22 个 API
-│   └── system/{user,role,menu,dept}.js
+│   ├── tech-reform.js            #技改任务 22 个 API
+│   └── system/{user,role,menu}.js
 ├── router/index.js               # 静态路由 + componentMap + beforeEach(三层检查)
 ├── store/
 │   ├── user.js                   # token/userInfo(AES加密)/roles/permissions/menus + loadRoutes
 │   └── app.js                    # sidebarCollapsed (预留)
 ├── utils/
 │   ├── request.js                # Axios: Bearer + R<T>解包 + Blob + 错误分类
-│   └── crypto.js                 # v2.0: AES 加密/解密 userInfo
+│   └── crypto.js                 #AES 加密/解密 userInfo
 ├── layout/
 │   ├── AppLayout.vue             # route.meta.layout → Default/TopOnly
 │   ├── DefaultLayout.vue         # TopBar + Sidebar + content
@@ -70,20 +70,20 @@ vue-front/src/
 │   ├── TopBar.vue                # logo + 模块tabs + 头像(读userStore.menus,无独立请求)
 │   ├── Sidebar.vue               # 按模块动态子菜单(读userStore.menus,无独立请求)
 │   └── MenuItem.vue              # 递归 el-sub-menu / el-menu-item
-├── components/TechReform/        # v2.0 新增
+├── components/TechReform/        #新增
 │   ├── TaskFormDialog.vue        # 父任务新增/编辑弹窗
 │   ├── SubtaskFormDialog.vue     # 子任务新增/编辑弹窗 (含条件字段+远程搜索)
 │   └── ImportWizard.vue          # 文件导入4步向导 (上传→模式→映射→预览)
 ├── views/
-│   ├── login/index.vue           # v2.0: 自动登录(mock)/SSO登录
+│   ├── login/index.vue           #自动登录(mock)/SSO登录
 │   ├── dashboard/index.vue       # 首页
 │   ├── error/404.vue             # 404 页面
-│   ├── system/{user,role,menu,dept}/
+│   ├── system/{user,role,menu}/
 │   ├── tech-reform/
-│   │   ├── overview/index.vue    # v2.0: 任务总览 CRUD + 筛选 + 角色权限
+│   │   ├── overview/index.vue    #任务总览 CRUD + 筛选 + 角色权限
 │   │   └── subtask/
-│   │       ├── index.vue         # v2.0: 双Tab (子任务管理 + 治理清单)
-│   │       └── GovernanceDetail.vue # v2.0: 治理清单详情 (行内编辑+下载+批量)
+│   │       ├── index.vue         #双Tab (子任务管理 + 治理清单)
+│   │       └── GovernanceDetail.vue #治理清单详情 (行内编辑+下载+批量)
 │   ├── db-manage/{dba,app-db,inspection,slow-sql}/
 │   ├── tech-stack/{overview,issues}/
 │   ├── asset/{health,app-important,app-scenario,dev-paradigm}/
@@ -452,7 +452,7 @@ const tableRef = ref<TableInstance>();
 - 其他 → `DefaultLayout` (顶栏+侧栏)
 - `AppLayout.vue` 读 `route.meta.layout` 动态渲染
 
-### 动态路由流程 (v2.0)
+### 动态路由流程
 ```
 登录 → login() → setToken() + setUserInfo(AES加密存localStorage)
 → getUserMenuTree() → setMenus() → generateRoutes() → addRoute 所有菜单
@@ -463,7 +463,7 @@ const tableRef = ref<TableInstance>();
 → 任一缺失 → logout() → 强制跳 /login
 ```
 
-### 路由守卫 (v2.1 SSO 改造)
+### 路由守卫 (SSO 改造)
 
 ```
 router.beforeEach:
@@ -482,7 +482,7 @@ router.beforeEach:
   4. 全部通过 → next()
 ```
 
-### 用户状态存储 (v2.0)
+### 用户状态存储
 - `token` → localStorage 明文
 - `userInfo` → localStorage AES 加密 (密钥: `VITE_USERINFO_ENCRYPT_KEY`)
 - `roles` → 初始化时从 userInfo.roles 恢复 (修复刷新丢失)

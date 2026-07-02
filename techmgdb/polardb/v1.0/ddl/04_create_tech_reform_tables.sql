@@ -1,6 +1,4 @@
--- v2.0 DDL: 新增表 (tech_reform_task, tech_reform_subtask, tech_reform_item)
--- sys_user_branch 已移除 (v2.1: 用户只有一个机构，branch 信息已在 sys_user 表中)
--- 来源: backend/techmg-admin/src/main/resources/sql/migration-v2.sql
+-- v1.0 技改任务表 DDL (3张: tech_reform_task, tech_reform_subtask, tech_reform_item)
 
 CREATE TABLE IF NOT EXISTS `tech_reform_task` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,

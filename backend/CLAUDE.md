@@ -74,7 +74,7 @@ application → *-service → core → {infrastructure, security} → common
 
 ## API 清单 (57 端点)
 
-### Auth (6) — v2.0 扩展 (SSIC 改造)
+### Auth (6) — SSIC 改造
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/api/auth/login` | SSIC 模式: 302 重定向到 SSO 登录页; Mock 模式: 返回错误 |
@@ -106,19 +106,13 @@ application → *-service → core → {infrastructure, security} → common
 | GET | `/api/system/menu/user-tree` | 按角色过滤的用户菜单树 |
 | GET/POST/PUT/DELETE | `/api/system/menu` `/{id}` | CRUD |
 
-### 部门管理 (5)
-| 方法 | 路径 | 说明 |
-|------|------|------|
-| GET | `/api/system/dept/tree` | 部门树 |
-| GET/POST/PUT/DELETE | `/api/system/dept` `/{id}` | CRUD |
-
 ### 操作日志 (2)
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/api/system/operation-log/list` | 分页列表 (keyword/模块/时间范围) |
 | GET | `/api/system/operation-log/{id}` | 详情 |
 
-### 数据字典 (8) — v2.0: @Cacheable/@CacheEvict 已移除，直读 DB
+### 数据字典 (8) — 直读 DB
 | 方法 | 路径 | 说明 |
 |------|------|------|
 | GET | `/api/system/dict/type/list` | 字典类型列表 |
@@ -126,7 +120,7 @@ application → *-service → core → {infrastructure, security} → common
 | GET | `/api/system/dict/data/{dictType}` | 按类型获取 |
 | POST/GET/PUT/DELETE | `/api/system/dict/data` `/{id}` | CRUD |
 
-### 技改任务管理 (19) — v2.0 新增
+### 技改任务管理 (19) — 新增
 
 #### 父任务 (6)
 | 方法 | 路径 | 说明 | 权限 |
@@ -306,7 +300,7 @@ Service 层必须面向接口编程：
 
 ---
 
-## 项目铁律（共 17 条，v2.0 修订 + 架构规约 + 测试质量）
+## 项目铁律（共 17 条，架构规约 + 测试质量）
 
 1. 配置 `.yml`, 禁止 `.properties`
 2. 简单CRUD用API, 复杂SQL用XML Mapper, 禁止注解SQL — 详见 [架构规约 §3](#3-事务管理与数据库操作约束)
@@ -432,11 +426,10 @@ ssic:
 - 数据源: `jdbc:mysql://47.99.179.180:33066/tmvp` / 用户: `techmg`
 - **23 表**: 9 系统表 + 10 业务表 + 4 v2 新表
 
-### v2.0 新增表
+### 业务表
 
 | 表 | 说明 |
 |------|------|
-| `sys_user_branch` | 用户多机构关联 |
 | `tech_reform_task` | 技改父任务 |
 | `tech_reform_subtask` | 技改子任务 |
 | `tech_reform_item` | 治理清单条目 |

@@ -7,18 +7,10 @@
 ```
 techmgdb/polardb/
 ├── README.md              # 本文件
-├── v1.0/
-│   ├── ddl/               # 表结构变更 (CREATE/ALTER/DROP TABLE)
-│   ├── dml/               # 数据变更 (INSERT/UPDATE/DELETE)
-│   └── rollback/          # 对应回滚脚本
-├── v2.0/
-│   ├── ddl/
-│   ├── dml/
-│   └── rollback/
-└── v{version}/
-    ├── ddl/
-    ├── dml/
-    └── rollback/
+└── v1.0/
+    ├── ddl/               # 表结构变更 (CREATE/ALTER/DROP TABLE)
+    ├── dml/               # 数据变更 (INSERT/UPDATE/DELETE)
+    └── rollback/          # 对应回滚脚本
 ```
 
 ## 命名规范

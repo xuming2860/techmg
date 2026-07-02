@@ -34,10 +34,7 @@ techmg/
 
 | 版本 | 日期 | 内容 |
 |------|------|------|
-| v1.0 | 2025-06 | 平台初版: RBAC + 菜单 + 技术治理占位 |
-| **v2.0** | **2026-06** | **登录改造 + ApiAccessLog 优化 + 技改任务管理** |
-
-| **v2.1** | **2026-07** | **SSIC 统一认证登录改造** |
+| v1.0 | 2026-06 | 平台初版: RBAC + 菜单 + 技改任务管理 + SSIC 统一认证登录 + 数据字典 |
 
 ## 技术栈（精确版本）
 
@@ -94,8 +91,9 @@ techmg/
 | [backend/CLAUDE.md](backend/CLAUDE.md) | 模块架构+企业级分层体系、57 API、框架组件、架构分层规约、17 条铁律、PolarDB SQL 规约、测试与代码质量、构建 |
 | [vue-front/CLAUDE.md](vue-front/CLAUDE.md) | 功能模块+页面清单、编码规约（10节+Element Plus专项）、核心设计、构建 |
 | [techmgdb/polardb/README.md](techmgdb/polardb/README.md) | SQL 命名规范、版本管理规则 |
-| [docs/superpowers/specs/2026-06-30-v2-design.md](docs/superpowers/specs/2026-06-30-v2-design.md) | v2.0 设计文档 |
-| [docs/database/tables.md](docs/database/tables.md) | 数据库表资产清单（23表，含变更记录） |
+| [docs/superpowers/specs/2026-06-30-v2-design.md](docs/superpowers/specs/2026-06-30-v2-design.md) | 登录改造 + 技改任务 设计文档 |
+| [docs/superpowers/specs/2026-07-02-login-flow.md](docs/superpowers/specs/2026-07-02-login-flow.md) | SSIC 登录内网适配改造指南 |
+| [docs/database/tables.md](docs/database/tables.md) | 数据库表资产清单（11表） |
 
 ---
 

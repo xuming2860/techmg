@@ -1,13 +1,6 @@
 -- v1.0 Rollback: 删除所有业务表 (逆序)
-DROP TABLE IF EXISTS `asset_procedure`;
-DROP TABLE IF EXISTS `asset_code`;
-DROP TABLE IF EXISTS `asset_param`;
-DROP TABLE IF EXISTS `asset_application`;
-DROP TABLE IF EXISTS `db_inspection_item`;
-DROP TABLE IF EXISTS `db_inspection_task`;
-DROP TABLE IF EXISTS `db_governance_item`;
-DROP TABLE IF EXISTS `db_governance_task`;
-DROP TABLE IF EXISTS `tech_governance_item`;
-DROP TABLE IF EXISTS `tech_governance_task`;
+DROP TABLE IF EXISTS `tech_reform_item`;
+DROP TABLE IF EXISTS `tech_reform_subtask`;
+DROP TABLE IF EXISTS `tech_reform_task`;
 DROP TABLE IF EXISTS `sys_dict_data`;
 DROP TABLE IF EXISTS `sys_dict_type`;
