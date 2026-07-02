@@ -10,6 +10,7 @@ import com.icbc.sh.techmg.system.entity.SysOperationLog;
 import com.icbc.sh.techmg.system.mapper.SysOperationLogMapper;
 import com.icbc.sh.techmg.system.service.SysOperationLogService;
 import com.icbc.sh.techmg.system.vo.SysOperationLogVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;

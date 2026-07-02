@@ -15,6 +15,8 @@ import com.icbc.sh.techmg.system.vo.SysDictTypeVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 @Service
 public class SysDictTypeServiceImpl extends ServiceImpl<SysDictTypeMapper, SysDictType>
