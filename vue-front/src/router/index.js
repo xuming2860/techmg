@@ -15,7 +15,14 @@ const mainRoute = {
   name: 'main',
   component: () => import('@/layout/AppLayout.vue'),
   redirect: '/dashboard',
-  children: []
+  children: [
+    {
+      path: '/dashboard',
+      name: 'Dashboard',
+      component: () => import('@/views/dashboard/index.vue'),
+      meta: { title: '首页', layout: 'top' }
+    }
+  ]
 }
 
 const router = createRouter({

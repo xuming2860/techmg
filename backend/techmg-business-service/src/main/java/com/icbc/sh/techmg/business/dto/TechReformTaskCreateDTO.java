@@ -18,6 +18,5 @@ public class TechReformTaskCreateDTO {
     private LocalDate endDate;
     private String taskOwner;
 
-    @NotBlank(message = "任务状态不能为空")
     private String status;
 }

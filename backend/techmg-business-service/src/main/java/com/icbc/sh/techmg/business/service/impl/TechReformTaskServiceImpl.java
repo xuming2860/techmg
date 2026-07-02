@@ -11,6 +11,7 @@ import com.icbc.sh.techmg.business.mapper.TechReformTaskMapper;
 import com.icbc.sh.techmg.business.service.TechReformTaskService;
 import com.icbc.sh.techmg.business.vo.TechReformTaskVO;
 import com.icbc.sh.techmg.common.constant.ResultCode;
+import com.icbc.sh.techmg.common.enums.ReformStatus;
 import com.icbc.sh.techmg.common.exception.BusinessException;
 import com.icbc.sh.techmg.system.entity.SysUser;
 import com.icbc.sh.techmg.system.service.SysUserService;
@@ -62,6 +63,10 @@ public class TechReformTaskServiceImpl extends ServiceImpl<TechReformTaskMapper,
     public TechReformTaskVO saveTask(TechReformTaskCreateDTO dto) {
         TechReformTask task = new TechReformTask();
         BeanUtils.copyProperties(dto, task);
+        // 新建任务默认状态为“待开始”
+        if (task.getStatus() == null || task.getStatus().isBlank()) {
+            task.setStatus(ReformStatus.PENDING.name());
+        }
         // Set taskOwner from current authenticated user if not provided
         if (task.getTaskOwner() == null || task.getTaskOwner().isBlank()) {
             String ownerName = getCurrentUserName();

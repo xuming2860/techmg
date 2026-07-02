@@ -27,6 +27,9 @@ export default defineConfig(({ mode }) => {
     },
     server: {
       port: 5173,
+      hmr: {
+        port: 5173
+      },
       proxy: {
         '/api': {
           target: env.VITE_API_BASE_URL || 'http://localhost:8080',

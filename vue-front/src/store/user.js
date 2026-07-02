@@ -62,14 +62,20 @@ export const useUserStore = defineStore('user', () => {
 
   function generateRoutes(menuList) {
     if (!menuList || !Array.isArray(menuList)) return
+    const existingPaths = new Set(router.getRoutes().map(r => r.path))
     for (const menu of menuList) {
       if (menu.type === 0 && menu.children && menu.children.length > 0) {
         generateRoutes(menu.children)
         continue
       }
       if (menu.type === 1 && menu.path && menu.component) {
+        // 避免与已存在的静态路由（如 /dashboard）重复注册
+        if (existingPaths.has(menu.path)) {
+          continue
+        }
         const comp = componentMap[menu.component]
         if (comp) {
+          existingPaths.add(menu.path)
           router.addRoute('main', {
             path: menu.path,
             name: menu.menuName,
@@ -84,11 +90,13 @@ export const useUserStore = defineStore('user', () => {
       }
     }
     // Add catch-all 404 AFTER all dynamic routes
-    router.addRoute('main', {
-      path: '/:pathMatch(.*)*',
-      name: 'NotFound',
-      component: () => import('@/views/error/404.vue')
-    })
+    if (!router.hasRoute('NotFound')) {
+      router.addRoute('main', {
+        path: '/:pathMatch(.*)*',
+        name: 'NotFound',
+        component: () => import('@/views/error/404.vue')
+      })
+    }
   }
 
   /** Load userInfo from localStorage (called on app init) */

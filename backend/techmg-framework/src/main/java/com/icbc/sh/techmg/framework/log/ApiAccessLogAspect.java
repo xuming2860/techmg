@@ -21,13 +21,14 @@ import org.springframework.beans.factory.annotation.Value;
 @Component
 public class ApiAccessLogAspect {
 
-    private final Gson gson = new Gson();
+    private final Gson gson;
     private final ApplicationEventPublisher eventPublisher;
 
     @Value("${api.access-log.max-length:4000}")
     private int maxLogLength;
 
-    public ApiAccessLogAspect(ApplicationEventPublisher eventPublisher) {
+    public ApiAccessLogAspect(Gson gson, ApplicationEventPublisher eventPublisher) {
+        this.gson = gson;
         this.eventPublisher = eventPublisher;
     }
 

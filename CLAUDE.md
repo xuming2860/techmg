@@ -16,9 +16,18 @@ techmg/
 │       ├── README.md       # SQL 命名与版本管理规约
 │       ├── v1.0/{ddl,dml,rollback}/
 │       └── v2.0/{ddl,dml,rollback}/
-└── docs/
-    ├── requirements/       # 需求文档（版本化）
-    └── superpowers/        # 设计文档 + 实施计划
+├── docs/                 # 需求文档（版本化）+ 设计文档
+│   ├── requirements/
+│   └── superpowers/
+└── scripts/              # 开发调试脚本
+    ├── lib/common.sh     # 公共变量与环境检查
+    ├── start-backend.sh  # 启动后端
+    ├── start-frontend.sh # 启动前端
+    ├── start-all.sh      # 一键启动
+    ├── stop-all.sh       # 停止开发服务
+    ├── check-status.sh   # 检查服务状态
+    ├── build-backend.sh  # 构建后端
+    └── build-frontend.sh # 构建前端
 ```
 
 ## 版本演进
@@ -84,6 +93,24 @@ techmg/
 | [vue-front/CLAUDE.md](vue-front/CLAUDE.md) | 功能模块+页面清单、编码规约（10节+Element Plus专项）、核心设计、构建 |
 | [techmgdb/polardb/README.md](techmgdb/polardb/README.md) | SQL 命名规范、版本管理规则 |
 | [docs/superpowers/specs/2026-06-30-v2-design.md](docs/superpowers/specs/2026-06-30-v2-design.md) | v2.0 设计文档 |
+
+---
+
+## 开发脚本
+
+常用开发/调试命令已沉淀到 `scripts/` 目录：
+
+```bash
+./scripts/start-backend.sh   # 启动后端（http://localhost:8080）
+./scripts/start-frontend.sh  # 启动前端（http://localhost:5173）
+./scripts/start-all.sh       # 一键启动后端+前端
+./scripts/stop-all.sh        # 停止占用 8080/5173 的开发服务
+./scripts/check-status.sh    # 检查前后端运行状态
+./scripts/build-backend.sh   # 全量构建后端（-DskipTests）
+./scripts/build-frontend.sh  # 构建前端测试包
+```
+
+详见 [scripts/README.md](scripts/README.md)。
 
 ---
 
