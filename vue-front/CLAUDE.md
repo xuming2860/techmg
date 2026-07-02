@@ -430,16 +430,20 @@ const tableRef = ref<TableInstance>();
 
 ## 核心设计
 
-### 登录流程 (v2.0)
+### 登录流程 (v2.0 → v2.1 SSIC 改造)
 
 ```
-用户打开平台 → GET /api/auth/config
+用户打开平台 → /login 页 → GET /api/auth/config
   ├── ssoEnabled=false → autoMockLogin: POST /api/auth/login → 后端返回配置用户
   │   → setToken + setUserInfo(AES加密) → getUserMenuTree → router.replace('/')
   │   用户体验: 瞬时加载 → 直接进入首页，无感知
   │
-  └── ssoEnabled=true → 显示"统一认证登录"按钮 → 重定向 SSO → ?ticket=xxx 回调
-      → POST /api/auth/sso/login → setToken + setUserInfo → 进入首页
+  └── ssoEnabled=true (SSIC 统一认证):
+      1. 前端无 token → 显示"统一认证登录"按钮
+      2. 点击 → GET /api/auth/login → 302 重定向到 SSO 登录页
+      3. SSO 登录完成 → 回跳 client.site.url?SSIAuth=xxx&SSI_SIGN=xxx
+      4. 前端截取 URL ? 后参数 → POST /api/auth/login (config=原始参数字符串)
+      5. 后端验证 SSI 参数 → JWT → 前端 setToken + setUserInfo → 进入首页
 ```
 
 ### 布局系统
@@ -459,7 +463,17 @@ const tableRef = ref<TableInstance>();
 → 任一缺失 → logout() → 强制跳 /login
 ```
 
-### 路由守卫 (v2.0 三层检查)
+### 路由守卫 (v2.1 SSO 改造)
+
+```
+router.beforeEach:
+  1. /login? + isLoggedIn → redirect / ; allow (含 SSIAuth 的 URL 放行)
+  2. !isLoggedIn || !userInfo → 保存 TARGET_URL → logout() → redirect /login
+  3. !routesLoaded → loadRoutes() → retry navigation
+  4. 全部通过 → next()
+
+登录成功后 → 从 localStorage 恢复 TARGET_URL → router.replace()
+```
 ```
 router.beforeEach:
   1. /login? → isLoggedIn && userInfo → redirect / ; else allow

@@ -110,10 +110,14 @@ export const useUserStore = defineStore('user', () => {
       const tree = await getUserMenuTree()
       if (tree && tree.length > 0) {
         setMenus(tree)
+      } else {
+        // Empty menu tree → still mark as loaded to prevent infinite retry
+        routesLoaded.value = true
       }
     } catch (err) {
-      // If API fails, routesLoaded stays false so we retry next navigation
-      routesLoaded.value = false
+      // API fails (e.g. 403) → mark as loaded to prevent router guard infinite retry loop
+      console.warn('[UserStore] loadRoutes failed, skipping dynamic routes:', err)
+      routesLoaded.value = true
     }
   }
 

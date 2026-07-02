@@ -100,7 +100,7 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             }
         }
 
-        // Update fields from API
+        // Update fields from SSIC/AAM API
         user.setRealName((String) info.getOrDefault("tellername", ""));
         user.setAdAccount((String) info.getOrDefault("ad", ""));
         user.setBranchId((String) info.getOrDefault("branchId", ""));

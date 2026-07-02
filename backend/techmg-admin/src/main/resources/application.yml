@@ -91,17 +91,27 @@ api:
   access-log:
     max-length: 4000  # max chars for request/response body logging
 
-# SSO (set enabled: true to activate; false keeps mock login)
-sso:
+# ============================================================
+# SSIC 统一认证配置（对接行内 SSIC 平台）
+# enablessIc: true=开启统一认证, false=关闭 (使用 mock 登录)
+# 部署到内网时只需修改此处的 enabled + sm-public-key + aam 相关配置
+# ============================================================
+ssic:
   enabled: false
-  login-url: ""
-  logout-url: ""
+  ip: aam.icbc                              # 统一认证服务器地址
+  server-key-name: SsIC                     # 统一认证公钥名称 (SsIC:pub)
+  version: SM2                              # 统一认证版本
+  client-key-name: techmanageplatform       # 应用的密钥名称
+  sm-public-key: ""                         # 3.0非对称密钥 (部署时填写)
+  client-site-url: http://localhost:5173/#/ # 应用登录回调 URL
+  aam-qry-teller-info-url: ""              # AAM 查询用户信息接口 URL
+  aam-dsf-ip: ""                           # AAM DSF IP
 
-# Mock 登录配置（sso.enabled=false 时生效）
+# Mock 登录配置（ssic.enabled=false 时生效）
 login:
   mock:
     auth-no: "admin"
-    real-name: "平台管理员"
+    real-name: "管理员"
     branch-id: "12092342"
     branch-name: "上海技术部"
     notes-id: "admin@sdc.com"

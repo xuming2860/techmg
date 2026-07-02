@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * Mock 登录配置 — sso.enabled=false 时生效。
+ * Mock 登录配置 — ssic.enabled=false 时生效。
  * 直接返回配置的固定用户信息 + JWT，跳过密码验证和外部 API 调用。
  */
 @Data

@@ -26,7 +26,10 @@
       <el-dropdown trigger="click" @command="handleCommand">
         <span class="user-dropdown">
           <span class="avatar">{{ avatarText }}</span>
-          <span class="user-name">{{ userStore.userInfo?.realName || '未登录' }}</span>
+          <span class="user-info">
+            <span class="user-dept">{{ userStore.userInfo?.branchName || '' }}</span>
+            <span class="user-name">{{ userStore.userInfo?.realName || '未登录' }}</span>
+          </span>
           <el-icon class="arrow"><ArrowDown /></el-icon>
         </span>
         <template #dropdown>
@@ -177,9 +180,18 @@ function handleCommand(cmd) {
     font-weight: 600;
     flex-shrink: 0;
   }
-  .user-name {
-    font-size: 13px;
-    color: #1f2329;
+  .user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.3;
+    .user-dept {
+      font-size: 11px;
+      color: #8f959e;
+    }
+    .user-name {
+      font-size: 13px;
+      color: #1f2329;
+    }
   }
   .arrow {
     font-size: 12px;

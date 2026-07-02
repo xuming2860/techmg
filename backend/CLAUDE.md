@@ -74,15 +74,16 @@ application → *-service → core → {infrastructure, security} → common
 
 ## API 清单 (57 端点)
 
-### Auth (6) — v2.0 扩展
+### Auth (6) — v2.0 扩展 (SSIC 改造)
 | 方法 | 路径 | 说明 |
 |------|------|------|
-| POST | `/api/auth/login` | 登录 (mock 模式: 跳过密码返回配置用户; SSO 模式: ticket 验证) |
+| GET | `/api/auth/login` | SSIC 模式: 302 重定向到 SSO 登录页; Mock 模式: 返回错误 |
+| POST | `/api/auth/login` | SSIC 模式: 验证 SSIAuth/SSI_SIGN 参数 → JWT; Mock 模式: 自动登录 |
 | POST | `/api/auth/logout` | 登出 |
 | GET | `/api/auth/userinfo` | 当前用户信息 (含 AD/机构/NotesID 等扩展字段) |
-| GET | `/api/auth/config` | 查询认证模式 {ssoEnabled, loginUrl} |
-| GET | `/api/auth/sso/login-url` | SSO 登录地址 |
-| POST | `/api/auth/sso/login` | SSO ticket 登录 |
+| GET | `/api/auth/config` | 查询认证模式 {ssoEnabled, ssicEnabled, loginUrl} |
+| GET | `/api/auth/sso/login-url` | SSO 登录地址 (兼容) |
+| POST | `/api/auth/sso/login` | SSO ticket 登录 (已废弃，使用 POST /login 替代) |
 
 ### 用户管理 (7)
 | 方法 | 路径 | 说明 |
@@ -174,13 +175,16 @@ application → *-service → core → {infrastructure, security} → common
 | MyMetaObjectHandler | framework/mybatis/ | 自动填充 |
 | JwtTokenProvider | framework/security/ | JWT 生成/验证 (jjwt 0.12.3) |
 | JwtAuthenticationFilter | framework/security/ | OncePerRequestFilter |
-| SsoAuthProvider | framework/security/ | SSO 接口 (mock 实现待替换) |
+| SsoAuthProvider | framework/security/ | SSIC 统一认证接口 (authenticate/queryUserInfo) |
+| SsicUser | framework/security/ | SSIC 用户信息 POJO |
+| SsicEncryptUtils | framework/security/ | SM2/SM4 加解密适配 (TODO: 替换行内 SDK) |
 | ExcelUtil | framework/excel/ | POI 4.1.2 |
 | ApiAccessLog | framework/log/ | AOP 结构化日志 + Spring Event 写库 |
 | TraceIdFilter | framework/web/ | 请求链路追踪 |
-| SecurityConfig | admin/config/ | 无状态JWT, `/api/auth/**` 放行 |
+| SecurityConfig | admin/config/ | 无状态JWT + CORS, `/api/auth/**` 放行 |
 | DataInitializer | admin/config/ | 启动创建 admin 用户 |
-| LoginMockProperties | admin/config/ | Mock 登录配置 (sso.enabled=false 时生效) |
+| LoginMockProperties | admin/config/ | Mock 登录配置 (ssic.enabled=false 时生效) |
+| SsicProperties | common/config/ | SSIC 配置属性 (ip/keyName/version/smPublicKey等) |
 
 ## 公共模块 (common)
 
@@ -370,12 +374,14 @@ Service 层必须面向接口编程：
 
 | 配置 | 行为 |
 |------|------|
-| `sso.enabled: false` | Mock 自动登录 — 前端无感知，后端返回 `login.mock` 配置的用户 |
-| `sso.enabled: true` | SSO 统一认证 — ticket 验证 → 外部 API 查用户 → JWT |
+| `ssic.enabled: false` | Mock 自动登录 — 前端无感知，后端返回 `login.mock` 配置的用户 |
+| `ssic.enabled: true` | SSIC 统一认证 — GET 重定向 SSO → 回调 SSIAuth/SSI_SIGN → 验证 → AAM 查询用户 → JWT |
+
+### Mock 模式
 
 Mock 配置示例 (`application.yml`):
 ```yaml
-sso:
+ssic:
   enabled: false
 login:
   mock:
@@ -386,6 +392,40 @@ login:
     roles:
       - "ROLE_PLATFORM_ADMIN"
 ```
+
+### SSIC 统一认证模式
+
+SSIC 配置示例 (`application.yml`):
+```yaml
+ssic:
+  enabled: true
+  ip: aam.icbc                              # 统一认证服务器地址
+  server-key-name: SsIC                     # 统一认证公钥名称
+  version: SM2                              # 统一认证版本
+  client-key-name: techmanageplatform       # 应用密钥名称
+  sm-public-key: ""                         # 3.0非对称密钥 (部署时填写)
+  client-site-url: http://localhost:5173/#/ # 应用登录回调 URL
+```
+
+### SSIC 登录流程
+
+```
+前端无 token → GET /api/auth/login → 302 重定向到 SSO 登录页
+  → 用户在 SSO 页登录 → 回跳 client.site.url?SSIAuth=xxx&SSI_SIGN=xxx
+  → 前端截取 ? 后参数 → POST /api/auth/login (config=原始参数字符串)
+  → 后端 serverSideAuth.execute(req, resp, ssiAuth, ssiSign) [TODO: 内网 SDK]
+  → 获取 SSIcUser → queryUserInfoAAM() [TODO: 内网 API]
+  → syncUserInfo (upsert sys_user) → 生成 JWT → 返回 {token, userInfo}
+```
+
+### 内网部署适配清单
+
+部署到内网后，需替换以下 TODO 标记处：
+1. `SsoAuthProviderImpl.authenticate()` — 替换为 `serverSideAuth.execute()`
+2. `SsoAuthProviderImpl.getLoginRedirectUrl()` — 替换为实际 SSO URL
+3. `SsoAuthProviderImpl.queryUserInfo()` — 替换为 `queryUserInfoAAM()` 真实调用
+4. `SsicEncryptUtils` — 替换为行内 `EncryptUtils` SDK
+5. `application.yml` — 填写 `ssic.sm-public-key` 和 `ssic.client-site-url` 真实值
 
 ## 数据库 (tmvp) — PolarDB 标准版
 

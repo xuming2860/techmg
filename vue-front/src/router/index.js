@@ -49,21 +49,48 @@ const componentMap = {
   'views/digital-eco/code-review/index': () => import('@/views/digital-eco/code-review/index.vue')
 }
 
+/**
+ * 路由守卫 — 三层检查 + SSO 重定向。
+ *
+ * 对应行内 SSO 流程:
+ *   1. 无 token → 保存目标 URL → 重定向 /login
+ *   2. /login 页检测无 SSIAuth → 显示 SSO 登录按钮 → 点击后 GET /api/auth/login → 302 → SSO 页
+ *   3. SSO 登录完成 → 回跳 client.site.url?SSIAuth=xxx&SSI_SIGN=xxx
+ *   4. /login 页检测 SSIAuth → POST /api/auth/login → 登录成功 → 恢复目标 URL
+ */
 router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore()
 
+  // 1. 目标为 /login 页
   if (to.path === '/login') {
-    if (userStore.isLoggedIn && userStore.userInfo) return next('/')
+    // 已登录 → 直接进入首页
+    if (userStore.isLoggedIn && userStore.userInfo) {
+      return next('/')
+    }
+
+    // 未登录 → 保存目标 URL（从哪个页面跳过来的）
+    // 如果 URL 中有 SSIAuth（SSO 回调），不保存目标 URL
+    if (!window.location.href.includes('SSIAuth')) {
+      // 从非 /login 页跳转过来时保存原目标
+      if (from.path !== '/login' && from.path !== '/') {
+        localStorage.setItem('TARGET_URL', to.path)
+        localStorage.setItem('TARGET_QUERY', JSON.stringify(to.query))
+      }
+    }
+
     return next()
   }
 
-  // 未登录或 userInfo 缺失 → 强制跳转登录页
+  // 2. 未登录或 userInfo 缺失 → 保存目标 URL 并跳转登录页
   if (!userStore.isLoggedIn || !userStore.userInfo) {
-    userStore.logout() // 清除残留的无效 token
+    userStore.logout()
+    // 保存当前目标 URL，登录成功后恢复
+    localStorage.setItem('TARGET_URL', to.path)
+    localStorage.setItem('TARGET_QUERY', JSON.stringify(to.query))
     return next('/login')
   }
 
-  // User is logged in but dynamic routes may not be loaded yet (page refresh)
+  // 3. 已登录但动态路由尚未加载（页面刷新场景）
   if (!userStore.routesLoaded) {
     await userStore.loadRoutes()
     return next({ ...to, replace: true })

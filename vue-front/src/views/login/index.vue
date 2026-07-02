@@ -15,7 +15,7 @@
         </div>
       </template>
 
-      <!-- SSO 模式 -->
+      <!-- SSO 模式 — 统一认证登录按钮 -->
       <template v-else-if="authMode === 'sso'">
         <el-button type="primary" size="large" style="width: 100%; height: 44px; font-size: 15px"
           :loading="loading" @click="handleSsoLogin">
@@ -31,9 +31,10 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
-import { login, getAuthConfig, ssoLoginUrl, ssoLogin } from '@/api/auth'
+import { getAuthConfig, ssoLoginByConfig } from '@/api/auth'
 import { getUserMenuTree } from '@/api/system/menu'
 import { useUserStore } from '@/store/user'
+import axios from 'axios'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -44,13 +45,12 @@ const statusText = ref('正在获取认证配置...')
 
 // ========== 通用：登录成功 → 跳转 ==========
 
-async function afterLogin(data) {
+async function afterLogin(data: any) {
   console.debug('[Login] afterLogin received:', data)
   userStore.setToken(data.token)
   if (data.userInfo) {
     userStore.setUserInfo(data.userInfo)
   } else {
-    // fallback: data might be the userInfo itself
     userStore.setUserInfo(data)
   }
 
@@ -62,7 +62,19 @@ async function afterLogin(data) {
   }
 
   console.debug('[Login] token set:', !!userStore.token, 'userInfo:', userStore.userInfo)
-  router.replace({ name: 'main' })
+
+  // 恢复登录前的目标 URL（SSO 重定向前保存的）
+  const targetUrl = localStorage.getItem('TARGET_URL')
+  const targetQuery = localStorage.getItem('TARGET_QUERY')
+  localStorage.removeItem('TARGET_URL')
+  localStorage.removeItem('TARGET_QUERY')
+
+  if (targetUrl) {
+    const query = targetQuery ? JSON.parse(targetQuery) : {}
+    router.replace({ path: targetUrl, query })
+  } else {
+    router.replace({ name: 'main' })
+  }
 }
 
 // ========== Mock 自动登录 ==========
@@ -70,10 +82,15 @@ async function afterLogin(data) {
 async function autoMockLogin() {
   statusText.value = '正在登录...'
   try {
-    const data = await login({ authNo: '', password: '' })
-    console.debug('[Login] mock login response:', data)
-    await afterLogin(data)
-  } catch (e) {
+    const data = await axios.post('/api/auth/login', { authNo: '', password: '' })
+    // 解包 R<T> 响应
+    const res = data.data || data
+    if (res.code === 200) {
+      await afterLogin(res.data)
+    } else {
+      throw new Error(res.message || '登录失败')
+    }
+  } catch (e: any) {
     console.error('[Login] mock login failed:', e)
     statusText.value = '登录失败，请刷新页面重试'
   }
@@ -81,18 +98,24 @@ async function autoMockLogin() {
 
 // ========== SSO 登录 ==========
 
+/**
+ * 点击"统一认证登录"按钮 → GET /api/auth/login → 302 重定向到 SSO 登录页。
+ *
+ * 对应行内流程:
+ *   前端无 token → GET /api/auth/login → 后端 302 → 浏览器跳转到 https://aam.icbc/.../login/aam2/tmvp
+ */
 async function handleSsoLogin() {
   loading.value = true
   try {
-    const res = await ssoLoginUrl()
-    if (res.loginUrl) {
-      window.location.href = res.loginUrl
-    } else {
-      ElMessage.warning('SSO 登录地址未配置')
+    // 保存当前目标 URL，登录成功后恢复
+    const targetUrl = localStorage.getItem('TARGET_URL')
+    if (!targetUrl) {
+      localStorage.setItem('TARGET_URL', window.location.pathname === '/login' ? '/' : window.location.pathname)
     }
+    // 直接 GET 请求 → 浏览器会跟随 302 重定向到 SSO 登录页
+    window.location.href = `${import.meta.env.VITE_API_BASE_URL}/api/auth/login`
   } catch (err) {
-    ElMessage.error('获取 SSO 登录地址失败')
-  } finally {
+    ElMessage.error('跳转统一认证失败')
     loading.value = false
   }
 }
@@ -100,31 +123,55 @@ async function handleSsoLogin() {
 // ========== 初始化 ==========
 
 onMounted(async () => {
-  // 1. 处理 SSO 回调（URL 带 ?ticket=xxx）
-  const urlParams = new URLSearchParams(window.location.search)
-  const ticket = urlParams.get('ticket')
-  if (ticket) {
+  const url = window.location.href
+
+  // ================================================================
+  // 1. 处理 SSO 回调 — URL 带 ?SSIAuth=xxx&SSI_SIGN=xxx
+  //    对应行内流程: 统一认证登录成功后回跳 client.site.url?SSIAuth=xxx&SSI_SIGN=xxx
+  // ================================================================
+  if (url.indexOf('SSIAuth') > 0) {
     loading.value = true
     authMode.value = 'sso'
     statusText.value = '正在验证统一认证...'
+
+    // 截取 ? 后的全部参数作为 config
+    const index = url.indexOf('?')
+    const config = url.substring(index + 1)
+
     try {
-      const res = await ssoLogin(ticket)
+      const res = await ssoLoginByConfig(config)
       await afterLogin(res)
       return
-    } catch (e) {
-      console.error('SSO login failed:', e)
-      ElMessage.error('统一认证登录失败')
+    } catch (e: any) {
+      console.error('[Login] SSO login failed:', e)
+      ElMessage.error(e?.response?.data?.message || '统一认证登录失败')
+
+      // 检查是否需要跳转到统一认证报错页
+      const errData = e?.response?.data
+      if (errData?.path && errData.path.indexOf('uniformattestation') !== -1) {
+        const jump = errData.path.replace('userService/', '')
+        window.location.href = 'https://' + 'aam.icbc' + jump
+        return
+      }
+
+      // 清除 URL 中的 SSI 参数，避免重复提交
       window.history.replaceState(null, '', window.location.pathname)
       loading.value = false
       statusText.value = ''
+      // 重新初始化 — 显示 SSO 登录按钮
+      authMode.value = 'sso'
       return
     }
   }
 
-  // 2. 查询后端认证模式
+  // ================================================================
+  // 2. 无 SSI 参数 — 查询后端认证模式
+  // ================================================================
   try {
     const config = await getAuthConfig()
     if (config.ssoEnabled) {
+      // SSO 模式 — 显示"统一认证登录"按钮
+      // 用户点击后 GET /api/auth/login → 302 重定向到 SSO 登录页
       authMode.value = 'sso'
     } else {
       // Mock 模式 — 自动登录，用户无感知
@@ -133,6 +180,7 @@ onMounted(async () => {
     }
   } catch (err) {
     // 查询失败，默认自动 mock 登录
+    console.warn('[Login] getAuthConfig failed, fallback to mock:', err)
     authMode.value = 'mock'
     await autoMockLogin()
   }
