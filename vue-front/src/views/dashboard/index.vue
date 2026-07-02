@@ -1,7 +1,7 @@
 <template>
   <div class="dashboard">
     <div class="welcome">
-      <h2>👋 欢迎回来，{{ userStore.userInfo?.realName || '用户' }}</h2>
+      <h2>👋 欢迎回来，{{ userStore.userInfo?.tellername || '用户' }}</h2>
       <p>{{ today }} · 技术管理平台</p>
     </div>
 

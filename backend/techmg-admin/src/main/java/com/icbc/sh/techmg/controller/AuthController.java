@@ -203,14 +203,12 @@ public class AuthController {
         // 7. 构建响应
         Map<String, Object> userInfo = new LinkedHashMap<>();
         userInfo.put("authNo", authNo);
-        userInfo.put("realName", finalUser != null ? finalUser.getRealName() : "");
         userInfo.put("tellername", extInfo.getOrDefault("tellername", ""));
         userInfo.put("ad", extInfo.getOrDefault("ad", ""));
         userInfo.put("branchId", extInfo.getOrDefault("branchId", ""));
         userInfo.put("branchName", extInfo.getOrDefault("branchName", ""));
         userInfo.put("notesId", extInfo.getOrDefault("notesId", ""));
         userInfo.put("branchIdList", extInfo.getOrDefault("branchIdList", List.of()));
-        userInfo.put("urlPermission", extInfo.getOrDefault("urlPermission", "all"));
         userInfo.put("roles", roles);
 
         Map<String, Object> result = new HashMap<>();
@@ -231,7 +229,7 @@ public class AuthController {
 
         Map<String, Object> extInfo = new LinkedHashMap<>();
         extInfo.put("authNo", mockAuthNo);
-        extInfo.put("tellername", loginMockProperties.getRealName());
+        extInfo.put("tellername", loginMockProperties.getTellerName());
         extInfo.put("ad", loginMockProperties.getAdAccount());
         extInfo.put("branchId", loginMockProperties.getBranchId());
         extInfo.put("branchName", loginMockProperties.getBranchName());
@@ -240,7 +238,6 @@ public class AuthController {
             Map.of("branchId", loginMockProperties.getBranchId(),
                    "branchName", loginMockProperties.getBranchName())
         ));
-        extInfo.put("urlPermission", "all");
 
         SysUser finalUser = sysUserService.syncUserInfo(extInfo);
 
@@ -250,14 +247,12 @@ public class AuthController {
 
         Map<String, Object> userInfo = new LinkedHashMap<>();
         userInfo.put("authNo", mockAuthNo);
-        userInfo.put("realName", finalUser != null ? finalUser.getRealName() : "");
-        userInfo.put("tellername", loginMockProperties.getRealName());
+        userInfo.put("tellername", loginMockProperties.getTellerName());
         userInfo.put("ad", loginMockProperties.getAdAccount());
         userInfo.put("branchId", loginMockProperties.getBranchId());
         userInfo.put("branchName", loginMockProperties.getBranchName());
         userInfo.put("notesId", loginMockProperties.getNotesId());
         userInfo.put("branchIdList", extInfo.get("branchIdList"));
-        userInfo.put("urlPermission", "all");
         userInfo.put("roles", roles);
 
         Map<String, Object> result = new HashMap<>();
@@ -293,7 +288,6 @@ public class AuthController {
         info.put("notesId", ssicUser.getNotesId() != null ? ssicUser.getNotesId() : "");
         info.put("branchIdList", ssicUser.getBranchIdList() != null
                 ? ssicUser.getBranchIdList() : "");
-        info.put("urlPermission", "all");
         return info;
     }
 
@@ -383,13 +377,11 @@ public class AuthController {
 
         Map<String, Object> userInfo = new LinkedHashMap<>();
         userInfo.put("authNo", authNo);
-        userInfo.put("realName", sysUser != null ? sysUser.getRealName() : "");
         userInfo.put("tellername", sysUser != null ? sysUser.getRealName() : "");
         userInfo.put("ad", sysUser != null ? sysUser.getAdAccount() : "");
         userInfo.put("branchId", sysUser != null ? sysUser.getBranchId() : "");
         userInfo.put("branchName", sysUser != null ? sysUser.getBranchName() : "");
         userInfo.put("notesId", sysUser != null ? sysUser.getNotesId() : "");
-        userInfo.put("urlPermission", sysUser != null ? sysUser.getUrlPermission() : "all");
         userInfo.put("roles", roles);
 
         return R.ok(userInfo);

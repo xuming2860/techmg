@@ -159,8 +159,6 @@ public class SsoAuthProviderImpl implements SsoAuthProvider {
         userInfo.put("branchIdList", Collections.singletonList(
                 Map.of("branchId", "12092342", "branchName", "上海技术部")
         ));
-        // SAERole: 主题聚合权限角色范围（内网部署后从 AAM 获取）
-        userInfo.put("SAERole", Collections.emptyList());
 
         return userInfo;
     }

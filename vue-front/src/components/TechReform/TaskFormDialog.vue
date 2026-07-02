@@ -180,7 +180,7 @@ watch(
   (val) => {
     if (val) {
       const defaultOwner =
-        userStore.userInfo?.realName || userStore.userInfo?.username || userStore.userInfo?.authNo || ''
+        userStore.userInfo?.tellername || userStore.userInfo?.authNo || ''
       if (props.task?.id) {
         // Edit mode: populate from task object
         Object.assign(form, {

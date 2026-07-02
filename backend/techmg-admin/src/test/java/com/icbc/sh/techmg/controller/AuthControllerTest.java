@@ -47,7 +47,7 @@ public class AuthControllerTest {
         when(ssicProperties.isEnabled()).thenReturn(false);
 
         when(loginMockProperties.getAuthNo()).thenReturn("admin");
-        when(loginMockProperties.getRealName()).thenReturn("平台管理员");
+        when(loginMockProperties.getTellerName()).thenReturn("平台管理员");
         when(loginMockProperties.getBranchId()).thenReturn("12092342");
         when(loginMockProperties.getBranchName()).thenReturn("上海技术部");
         when(loginMockProperties.getNotesId()).thenReturn("admin@sdc.com");
@@ -82,9 +82,8 @@ public class AuthControllerTest {
         Map<String, Object> userInfo = (Map<String, Object>) data.get("userInfo");
         assertNotNull(userInfo);
         assertEquals("admin", userInfo.get("authNo"));
-        assertEquals("平台管理员", userInfo.get("realName"));
+        assertEquals("平台管理员", userInfo.get("tellername"));
         assertEquals("12092342", userInfo.get("branchId"));
-        assertEquals("all", userInfo.get("urlPermission"));
         assertTrue(((List<?>) userInfo.get("roles")).contains("ROLE_PLATFORM_ADMIN"));
     }
 

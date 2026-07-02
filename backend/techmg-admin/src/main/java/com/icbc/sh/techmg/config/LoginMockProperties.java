@@ -18,8 +18,8 @@ public class LoginMockProperties {
     /** 统一认证号 */
     private String authNo = "admin";
 
-    /** 真实姓名 */
-    private String realName = "平台管理员";
+    /** 用户中文名（对应 SSIC TELLERNAME） */
+    private String tellerName = "平台管理员";
 
     /** 机构号 */
     private String branchId = "";

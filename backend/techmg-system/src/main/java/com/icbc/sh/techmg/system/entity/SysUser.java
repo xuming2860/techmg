@@ -1,6 +1,5 @@
 package com.icbc.sh.techmg.system.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.icbc.sh.techmg.common.base.BaseEntity;
 import lombok.Data;
@@ -23,8 +22,4 @@ public class SysUser extends BaseEntity {
     private String notesId;
     private java.time.LocalDateTime lastLoginTime;
     private Integer status;  // 0-禁用, 1-启用
-
-    /** URL权限标识 — 仅内存透传，不持久化（默认 "all"） */
-    @TableField(exist = false)
-    private String urlPermission;
 }
