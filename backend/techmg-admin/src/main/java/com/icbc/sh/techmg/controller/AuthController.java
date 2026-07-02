@@ -149,7 +149,6 @@ public class AuthController {
         userInfo.put("branchId", extInfo.getOrDefault("branchId", ""));
         userInfo.put("branchName", extInfo.getOrDefault("branchName", ""));
         userInfo.put("notesId", extInfo.getOrDefault("notesId", ""));
-        userInfo.put("branchIdList", extInfo.getOrDefault("branchIdList", List.of()));
         userInfo.put("roles", roles);
 
         Map<String, Object> result = new HashMap<>();
@@ -170,10 +169,6 @@ public class AuthController {
         extInfo.put("branchId", loginMockProperties.getBranchId());
         extInfo.put("branchName", loginMockProperties.getBranchName());
         extInfo.put("notesId", loginMockProperties.getNotesId());
-        extInfo.put("branchIdList", List.of(
-            Map.of("branchId", loginMockProperties.getBranchId(),
-                   "branchName", loginMockProperties.getBranchName())
-        ));
 
         SysUser finalUser = sysUserService.syncUserInfo(extInfo);
         List<String> roles = loginMockProperties.getRoles();
@@ -186,7 +181,6 @@ public class AuthController {
         userInfo.put("branchId", loginMockProperties.getBranchId());
         userInfo.put("branchName", loginMockProperties.getBranchName());
         userInfo.put("notesId", loginMockProperties.getNotesId());
-        userInfo.put("branchIdList", extInfo.get("branchIdList"));
         userInfo.put("roles", roles);
 
         Map<String, Object> result = new HashMap<>();
@@ -214,7 +208,6 @@ public class AuthController {
         info.put("branchId", ssicUser.getBranchId() != null ? ssicUser.getBranchId() : "");
         info.put("branchName", ssicUser.getBranchName() != null ? ssicUser.getBranchName() : "");
         info.put("notesId", ssicUser.getNotesId() != null ? ssicUser.getNotesId() : "");
-        info.put("branchIdList", ssicUser.getBranchIdList() != null ? ssicUser.getBranchIdList() : "");
         return info;
     }
 

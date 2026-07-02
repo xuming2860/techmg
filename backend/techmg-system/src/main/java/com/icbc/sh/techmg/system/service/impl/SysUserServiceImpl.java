@@ -8,9 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.icbc.sh.techmg.common.util.PageResult;
 import com.icbc.sh.techmg.system.entity.SysRole;
 import com.icbc.sh.techmg.system.entity.SysUser;
-import com.icbc.sh.techmg.system.entity.SysUserBranch;
 import com.icbc.sh.techmg.system.entity.SysUserRole;
-import com.icbc.sh.techmg.system.mapper.SysUserBranchMapper;
 import com.icbc.sh.techmg.system.mapper.SysUserMapper;
 import com.icbc.sh.techmg.system.mapper.SysUserRoleMapper;
 import com.icbc.sh.techmg.system.mapper.SysRoleMapper;
@@ -34,7 +32,6 @@ import java.util.stream.Collectors;
 public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements SysUserService {
 
     private final SysUserRoleMapper sysUserRoleMapper;
-    private final SysUserBranchMapper sysUserBranchMapper;
     private final SysRoleMapper sysRoleMapper;
 
     @Override
@@ -96,30 +93,12 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             }
         }
 
-        // Update from SSIC/AAM
         user.setUsername((String) info.getOrDefault("username", user.getUsername()));
         user.setBranchId((String) info.getOrDefault("branchId", ""));
         user.setBranchName((String) info.getOrDefault("branchName", ""));
         user.setNotesId((String) info.getOrDefault("notesId", ""));
         user.setLastLoginTime(java.time.LocalDateTime.now());
         this.saveOrUpdate(user);
-
-        // Sync branch list
-        @SuppressWarnings("unchecked")
-        List<Map<String, String>> branchList = (List<Map<String, String>>) info.get("branchIdList");
-        if (branchList != null) {
-            LambdaQueryWrapper<SysUserBranch> wrapper = new LambdaQueryWrapper<>();
-            wrapper.eq(SysUserBranch::getUserId, user.getId());
-            sysUserBranchMapper.delete(wrapper);
-
-            for (Map<String, String> branch : branchList) {
-                SysUserBranch ub = new SysUserBranch();
-                ub.setUserId(user.getId());
-                ub.setBranchId(branch.get("branchId"));
-                ub.setBranchName(branch.get("branchName"));
-                sysUserBranchMapper.insert(ub);
-            }
-        }
 
         return user;
     }

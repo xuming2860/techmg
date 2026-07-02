@@ -1,14 +1,6 @@
--- v2.0 DDL: 新增表 (sys_user_branch, tech_reform_task, tech_reform_subtask, tech_reform_item)
+-- v2.0 DDL: 新增表 (tech_reform_task, tech_reform_subtask, tech_reform_item)
+-- sys_user_branch 已移除 (v2.1: 用户只有一个机构，branch 信息已在 sys_user 表中)
 -- 来源: backend/techmg-admin/src/main/resources/sql/migration-v2.sql
-
-CREATE TABLE IF NOT EXISTS `sys_user_branch` (
-    `id` BIGINT NOT NULL AUTO_INCREMENT,
-    `user_id` BIGINT NOT NULL COMMENT '用户ID',
-    `branch_id` VARCHAR(32) NOT NULL COMMENT '机构号',
-    `branch_name` VARCHAR(200) DEFAULT '' COMMENT '机构名',
-    PRIMARY KEY (`id`),
-    INDEX `idx_user_id` (`user_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户多机构关联表';
 
 CREATE TABLE IF NOT EXISTS `tech_reform_task` (
     `id` BIGINT NOT NULL AUTO_INCREMENT,

@@ -54,7 +54,6 @@ public class SsoAuthProviderImpl implements SsoAuthProvider {
         //           .branchId(ssicUser.getBranchId())
         //           .branchName(ssicUser.getBranchName())
         //           .notesId(ssicUser.getNotesId())
-        //           .branchIdList(ssicUser.getBranchIdList())
         //           .build();
         //   }
         //   return null;
@@ -70,7 +69,6 @@ public class SsoAuthProviderImpl implements SsoAuthProvider {
                     .branchId("12092342")
                     .branchName("上海技术部")
                     .notesId(ssiAuth + "@sdc.com")
-                    .branchIdList("12092342")
                     .build();
         }
         return null;
@@ -140,7 +138,6 @@ public class SsoAuthProviderImpl implements SsoAuthProvider {
         //       userInfo.put("branchId", tellerObj.get("BRANCHID").getAsString());
         //       userInfo.put("branchName", tellerObj.get("BRANCHNAME").getAsString());
         //       userInfo.put("notesId", tellerObj.get("NOTESID").getAsString());
-        //       userInfo.put("branchIdList", tellerObj.get("BRANCHID_LIST").getAsString());
         //       return userInfo;
         //   }
         //   return null;
@@ -154,7 +151,6 @@ public class SsoAuthProviderImpl implements SsoAuthProvider {
         userInfo.put("branchId", "12092342");
         userInfo.put("branchName", "上海技术部");
         userInfo.put("notesId", userId + "@sdc.com");
-        userInfo.put("branchIdList", Collections.singletonList(
                 Map.of("branchId", "12092342", "branchName", "上海技术部")
         ));
 

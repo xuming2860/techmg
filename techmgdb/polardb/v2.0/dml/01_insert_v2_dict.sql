@@ -24,5 +24,6 @@ INSERT IGNORE INTO sys_dict_data (dict_type, dict_label, dict_value, sort) VALUE
 ('task_source', '架构管理二部', 'arch_dept_2', 3),
 ('task_source', '云计算实验室', 'cloud_lab', 4),
 ('task_source', '上海技术部', 'shanghai_tech', 5),
-('subtask_db_type', 'GaussDB MySQL', 'gaussdb_mysql', 1),
-('subtask_db_type', 'PolarDB', 'polardb', 2);
+('subtask_db_type', 'GaussDB', 'gaussdb', 1),
+('subtask_db_type', 'PolarDB', 'polardb', 2),
+('subtask_db_type', 'MySQL', 'mysql', 3);
